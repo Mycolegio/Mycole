@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 El Gran Juego de la Naturaleza 🌤️</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Fredoka+One&display=swap');
+
+  :root {
+    --sky: #87CEEB;
+    --ocean: #1a6fa8;
+    --green: #4CAF50;
+    --sun: #FFD700;
+    --cloud: #f0f8ff;
+    --orange: #FF8C00;
+    --pink: #FF69B4;
+    --purple: #9370DB;
+    --red: #e74c3c;
+    --correct: #2ecc71;
+    --wrong: #e74c3c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(180deg, #87CEEB 0%, #b8e4f9 40%, #c8f0c8 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* CLOUDS BACKGROUND */
+  .cloud-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;
+  }
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.7;
+    animation: floatCloud linear infinite;
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  .cloud::before { width: 60%; height: 150%; top: -40%; left: 15%; }
+  .cloud::after { width: 40%; height: 130%; top: -25%; right: 10%; }
+  @keyframes floatCloud {
+    from { transform: translateX(-200px); }
+    to { transform: translateX(calc(100vw + 200px)); }
+  }
+
+  /* MAIN WRAPPER */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 20px 10px 10px;
+  }
+  .header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 6vw, 3rem);
+    color: white;
+    text-shadow: 3px 3px 0 var(--ocean), 5px 5px 0 rgba(0,0,0,0.2);
+    letter-spacing: 1px;
+  }
+  .header .subtitle {
+    font-size: 1.1rem;
+    color: #1a5276;
+    font-weight: 700;
+    margin-top: 5px;
+  }
+  .stars-display {
+    display: flex; justify-content: center; gap: 5px;
+    margin-top: 10px; font-size: 1.8rem;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.5);
+    border-radius: 20px;
+    height: 18px;
+    margin: 10px 0;
+    overflow: hidden;
+    border: 2px solid white;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    border-radius: 20px;
+    transition: width 0.5s ease;
+  }
+
+  /* MENU */
+  #menu {
+    padding: 20px 0;
+  }
+  .menu-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    color: #1a5276;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .topic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  @media (max-width: 500px) { .topic-grid { grid-template-columns: 1fr; } }
+
+  .topic-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 4px solid transparent;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+  .topic-card:active { transform: scale(0.97); }
+  .topic-card .emoji { font-size: 3.5rem; display: block; margin-bottom: 8px; }
+  .topic-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: #1a5276; }
+  .topic-card .desc { font-size: 0.8rem; color: #666; margin-top: 4px; }
+  .topic-card .badge {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--sun); border-radius: 50%; width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; font-weight: 900;
+  }
+
+  /* Topic colors */
+  .topic-agua { border-color: #1a6fa8; background: linear-gradient(135deg, #e8f4fc, white); }
+  .topic-naturaleza { border-color: var(--green); background: linear-gradient(135deg, #e8f5e9, white); }
+  .topic-ciclo { border-color: var(--purple); background: linear-gradient(135deg, #f3e5f5, white); }
+  .topic-aire { border-color: var(--sky); background: linear-gradient(135deg, #e3f2fd, white); }
+  .topic-tiempo { border-color: var(--orange); background: linear-gradient(135deg, #fff3e0, white); }
+
+  /* LECCIÓN */
+  #lesson {
+    display: none;
+  }
+  .lesson-card {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+    animation: slideIn 0.4s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .lesson-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 15px;
+  }
+  .lesson-emoji { font-size: 2.5rem; }
+  .lesson-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #1a5276;
+  }
+
+  .info-block {
+    background: linear-gradient(135deg, #e8f4fc, #f0f8ff);
+    border-left: 5px solid var(--ocean);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 12px 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #2c3e50;
+  }
+  .info-block strong { color: var(--ocean); }
+  .info-block.green { background: linear-gradient(135deg, #e8f5e9, #f1f8f1); border-color: var(--green); }
+  .info-block.green strong { color: #2e7d32; }
+  .info-block.orange { background: linear-gradient(135deg, #fff3e0, #fffde7); border-color: var(--orange); }
+  .info-block.orange strong { color: #e65100; }
+  .info-block.purple { background: linear-gradient(135deg, #f3e5f5, #fce4ec); border-color: var(--purple); }
+  .info-block.purple strong { color: #6a1b9a; }
+
+  /* Illustration boxes */
+  .illustration {
+    border-radius: 16px;
+    padding: 20px;
+    margin: 15px 0;
+    text-align: center;
+    font-size: 4rem;
+    line-height: 1.3;
+    position: relative;
+    overflow: hidden;
+  }
+  .illus-water { background: linear-gradient(135deg, #e3f2fd, #b3e5fc); border: 3px solid #29b6f6; }
+  .illus-sky { background: linear-gradient(180deg, #81d4fa, #e1f5fe); border: 3px solid #4fc3f7; }
+  .illus-green { background: linear-gradient(135deg, #e8f5e9, #dcedc8); border: 3px solid #66bb6a; }
+  .illus-cycle { background: linear-gradient(135deg, #e8eaf6, #f3e5f5); border: 3px solid #7986cb; }
+  .illus-weather { background: linear-gradient(135deg, #fff8e1, #fce4ec); border: 3px solid #ffa726; }
+
+  .illus-caption {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a5276;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Cycle steps */
+  .cycle-steps {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .cycle-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: white; border-radius: 14px; padding: 12px;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+  }
+  .step-num {
+    background: var(--purple); color: white;
+    border-radius: 50%; width: 32px; height: 32px; min-width: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 1rem;
+  }
+  .step-text { font-size: 0.95rem; line-height: 1.5; padding-top: 4px; }
+
+  /* Vocab pills */
+  .vocab-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0;
+  }
+  .vocab-pill {
+    background: white; border-radius: 12px; padding: 10px;
+    border: 2px solid #ddd; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .vocab-pill:hover { transform: scale(1.03); }
+  .vocab-pill .vemoji { font-size: 1.8rem; }
+  .vocab-pill .vname { font-weight: 700; font-size: 0.85rem; color: #1a5276; }
+  .vocab-pill .vdef { font-size: 0.72rem; color: #666; margin-top: 2px; }
+
+  /* Audio button */
+  .audio-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none; border-radius: 50px; padding: 10px 20px;
+    font-family: 'Fredoka One', cursive; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    margin: 10px auto; transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(255,165,0,0.4);
+    color: #5d3a00;
+  }
+  .audio-btn:hover { transform: scale(1.05); }
+  .audio-btn:active { transform: scale(0.96); }
+
+  /* Navigation */
+  .nav-btns {
+    display: flex; gap: 12px; justify-content: center; margin-top: 15px; flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Fredoka One', cursive;
+    border: none; border-radius: 50px; padding: 12px 28px;
+    font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+  .btn:active { transform: scale(0.96); }
+  .btn-primary { background: linear-gradient(135deg, #1a6fa8, #154f7a); color: white; }
+  .btn-success { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+  .btn-orange { background: linear-gradient(135deg, #FF8C00, #e67e00); color: white; }
+  .btn-back { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+  .btn-menu { background: linear-gradient(135deg, #9370DB, #7b56c4); color: white; }
+
+  /* QUIZ */
+  #quiz { display: none; }
+  .quiz-card {
+    background: white;
+    border-radius: 24px;
+    padding: 25px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    animation: slideIn 0.4s ease;
+  }
+  .quiz-info {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 15px; font-weight: 700; color: #555;
+  }
+  .question-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem; color: #1a5276;
+    margin-bottom: 20px; line-height: 1.4;
+    text-align: center;
+  }
+  .question-emoji { font-size: 3rem; text-align: center; margin-bottom: 10px; }
+
+  .options-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 15px;
+  }
+  @media (max-width: 400px) { .options-grid { grid-template-columns: 1fr; } }
+
+  .option-btn {
+    background: #f8f9fa; border: 3px solid #dee2e6;
+    border-radius: 16px; padding: 14px 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; color: #333;
+    text-align: center; line-height: 1.4;
+  }
+  .option-btn:hover { background: #e3f2fd; border-color: var(--ocean); transform: scale(1.03); }
+  .option-btn.correct { background: #d4edda; border-color: var(--correct); color: #155724; transform: scale(1.03); }
+  .option-btn.wrong { background: #f8d7da; border-color: var(--wrong); color: #721c24; }
+  .option-btn:disabled { cursor: not-allowed; }
+
+  .feedback {
+    border-radius: 16px; padding: 15px; text-align: center;
+    font-weight: 700; font-size: 1rem; margin-top: 10px;
+    animation: popIn 0.3s ease;
+    display: none;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .feedback.correct { background: #d4edda; color: #155724; border: 2px solid var(--correct); }
+  .feedback.wrong { background: #f8d7da; color: #721c24; border: 2px solid var(--wrong); }
+
+  /* RESULTS */
+  #results { display: none; }
+  .results-card {
+    background: white; border-radius: 24px; padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15); text-align: center;
+    animation: slideIn 0.4s ease;
+  }
+  .results-emoji { font-size: 5rem; }
+  .results-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem; color: #1a5276; margin: 10px 0;
+  }
+  .score-display {
+    font-size: 3rem; font-weight: 900; color: var(--ocean);
+    margin: 10px 0;
+  }
+  .stars-earned { font-size: 2.5rem; margin: 10px 0; }
+  .results-msg { font-size: 1rem; color: #555; margin: 10px 0 20px; line-height: 1.5; }
+
+  /* Confetti */
+  .confetti { position: fixed; pointer-events: none; z-index: 999; }
+
+  /* Bounce animation for stars */
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .star-anim { display: inline-block; animation: bounce 0.5s ease infinite; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .lesson-card, .quiz-card, .results-card { padding: 18px; }
+    .vocab-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem; color: white;
+    background: var(--ocean);
+    display: inline-block; border-radius: 20px; padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+
+  /* Instrument cards */
+  .instrument-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0;
+  }
+  @media (max-width: 400px) { .instrument-row { grid-template-columns: 1fr; } }
+  .instrument-card {
+    background: white; border-radius: 14px; padding: 12px 8px;
+    text-align: center; border: 2px solid #e0e0e0;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  }
+  .instrument-card .iemoji { font-size: 2.2rem; }
+  .instrument-card .iname { font-weight: 900; font-size: 0.8rem; color: var(--ocean); margin: 4px 0 2px; }
+  .instrument-card .idef { font-size: 0.72rem; color: #555; }
+</style>
+</head>
+<body>
+
+<!-- Animated clouds -->
+<div class="cloud-bg" aria-hidden="true">
+  <div class="cloud" style="width:120px;height:40px;top:8%;animation-duration:25s;animation-delay:0s"></div>
+  <div class="cloud" style="width:80px;height:28px;top:18%;animation-duration:32s;animation-delay:-10s"></div>
+  <div class="cloud" style="width:150px;height:50px;top:5%;animation-duration:40s;animation-delay:-20s"></div>
+  <div class="cloud" style="width:90px;height:32px;top:25%;animation-duration:28s;animation-delay:-5s"></div>
+</div>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🌊 El Gran Juego de la Naturaleza 🌤️</h1>
+    <p class="subtitle">¡Aprende jugando! 🎮</p>
+    <div class="stars-display" id="starsDisplay">⭐⭐⭐⭐⭐</div>
+  </div>
+
+  <!-- MENU PRINCIPAL -->
+  <div id="menu">
+    <p class="menu-title">🗺️ ¿Qué quieres aprender hoy?</p>
+    <div class="topic-grid">
+      <div class="topic-card topic-agua" onclick="startLesson('agua')">
+        <span class="emoji">💧</span>
+        <h3>¿Cómo es el agua?</h3>
+        <p class="desc">Sus estados y propiedades</p>
+        <div class="badge" id="badge-agua">📖</div>
+      </div>
+      <div class="topic-card topic-naturaleza" onclick="startLesson('naturaleza')">
+        <span class="emoji">🌍</span>
+        <h3>El agua en la naturaleza</h3>
+        <p class="desc">Mares, ríos, lagos...</p>
+        <div class="badge" id="badge-naturaleza">📖</div>
+      </div>
+      <div class="topic-card topic-ciclo" onclick="startLesson('ciclo')">
+        <span class="emoji">🔄</span>
+        <h3>El ciclo del agua</h3>
+        <p class="desc">De dónde viene y adónde va</p>
+        <div class="badge" id="badge-ciclo">📖</div>
+      </div>
+      <div class="topic-card topic-aire" onclick="startLesson('aire')">
+        <span class="emoji">💨</span>
+        <h3>Así es el aire</h3>
+        <p class="desc">Qué es y cómo es</p>
+        <div class="badge" id="badge-aire">📖</div>
+      </div>
+      <div class="topic-card topic-tiempo" onclick="startLesson('tiempo')" style="grid-column: span 2">
+        <span class="emoji">🌈</span>
+        <h3>¿Qué tiempo hace?</h3>
+        <p class="desc">Lluvia, viento, temperatura y más</p>
+        <div class="badge" id="badge-tiempo">📖</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-success" onclick="startMegaQuiz()">🎯 ¡GRAN EXAMEN! (Todos los temas)</button>
+    </div>
+  </div>
+
+  <!-- LECCIÓN -->
+  <div id="lesson">
+    <div id="lessonContent"></div>
+    <div class="nav-btns" id="lessonNav">
+      <button class="btn btn-back" onclick="showMenu()">🏠 Menú</button>
+      <button class="btn btn-success" id="quizBtn" onclick="startTopicQuiz()">🎮 ¡A jugar! Quiz</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-card" id="quizCard">
+      <div class="quiz-info">
+        <span id="qCounter">Pregunta 1/10</span>
+        <span id="qScore">⭐ 0</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="quizProgress"></div></div>
+      <div class="question-emoji" id="qEmoji"></div>
+      <div class="question-text" id="qText"></div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="nav-btns" id="quizNav" style="display:none">
+        <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Siguiente ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="results">
+    <div class="results-card" id="resultsCard">
+      <div class="results-emoji" id="resultsEmoji"></div>
+      <div class="results-title" id="resultsTitle"></div>
+      <div class="score-display" id="resultsScore"></div>
+      <div class="stars-earned" id="resultsStars"></div>
+      <div class="results-msg" id="resultsMsg"></div>
+      <div class="nav-btns">
+        <button class="btn btn-menu" onclick="showMenu()">🏠 Menú</button>
+        <button class="btn btn-orange" id="retryBtn">🔄 Repetir</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==================== DATA ====================
+
+const lessons = {
+  agua: {
+    title: '¿Cómo es el agua?',
+    emoji: '💧',
+    color: '#1a6fa8',
+    content: `
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <span class="lesson-emoji">💧</span>
+          <div>
+            <div class="section-label">Propiedades del agua</div>
+            <div class="lesson-title">¿Cómo es el agua?</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('El agua es un líquido. No tiene olor, por eso es inodora. No tiene color, por eso es incolora. Y no tiene sabor, por eso es insípida.')">
+          🔊 Escuchar explicación
+        </button>
+
+        <div class="info-block">
+          El agua es un <strong>LÍQUIDO</strong> que no tiene olor, color ni sabor.<br>
+          Por eso decimos que es:<br>
+          🚫👃 <strong>Inodora</strong> → sin olor<br>
+          🚫🎨 <strong>Incolora</strong> → sin color<br>
+          🚫😋 <strong>Insípida</strong> → sin sabor
+        </div>
+
+        <div class="illustration illus-water">
+          💧🧊♨️
+          <div class="illus-caption">El agua tiene tres estados: líquido, sólido y gaseoso</div>
+        </div>
+
+        <div class="section-label">Los 3 estados del agua</div>
+        <div class="vocab-grid">
+          <div class="vocab-pill" onclick="speak('Estado líquido. El agua se escurre y no tiene forma propia. Es el agua normal que bebemos.')">
+            <div class="vemoji">💧</div>
+            <div class="vname">Estado LÍQUIDO</div>
+            <div class="vdef">Se escurre, sin forma propia</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Estado sólido. Cuando el agua se enfría mucho se convierte en hielo.')">
+            <div class="vemoji">🧊</div>
+            <div class="vname">Estado SÓLIDO</div>
+            <div class="vdef">El hielo. Agua muy fría</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Estado gaseoso. Cuando el agua se calienta mucho se convierte en vapor.')">
+            <div class="vemoji">♨️</div>
+            <div class="vname">Estado GASEOSO</div>
+            <div class="vdef">El vapor. Agua muy caliente</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Evaporación. El agua líquida se transforma en vapor cuando se calienta mucho.')">
+            <div class="vemoji">🌡️</div>
+            <div class="vname">Evaporación</div>
+            <div class="vdef">Líquido → Gas (calor)</div>
+          </div>
+        </div>
+
+        <div class="info-block orange">
+          🧊 Cuando el agua se <strong>enfría mucho</strong> → se convierte en <strong>hielo</strong> (estado sólido)<br><br>
+          ♨️ Cuando el agua se <strong>calienta mucho</strong> → se convierte en <strong>vapor</strong> (estado gaseoso)
+        </div>
+
+        <button class="audio-btn" onclick="speak('Recuerda: el agua puede estar en tres estados. Estado líquido, como el agua del vaso. Estado sólido, como el hielo. Y estado gaseoso, como el vapor cuando hierve el agua.')">
+          🔊 Escuchar resumen
+        </button>
+      </div>
+    `
+  },
+
+  naturaleza: {
+    title: 'El agua en la naturaleza',
+    emoji: '🌍',
+    color: '#2e7d32',
+    content: `
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <span class="lesson-emoji">🌍</span>
+          <div>
+            <div class="section-label">Agua en la naturaleza</div>
+            <div class="lesson-title">¿Dónde encontramos agua?</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('El agua la encontramos en muchos lugares de la naturaleza: en los mares y océanos, en los ríos y lagos, bajo tierra y en los polos.')">
+          🔊 Escuchar explicación
+        </button>
+
+        <div class="illustration illus-green">
+          🌊 🏞️ 🏔️ 🧊
+          <div class="illus-caption">Mares y océanos • Ríos y lagos • Montañas • Polos</div>
+        </div>
+
+        <div class="info-block">
+          🌊 <strong>Mares y océanos</strong> → Casi toda el agua del planeta.<br>
+          Es <strong>AGUA SALADA</strong> → ¡No la podemos beber!<br>
+          Viven muchos animales marinos.
+        </div>
+
+        <div class="info-block green">
+          🏞️ <strong>Ríos, lagos y bajo tierra</strong> → Menos cantidad.<br>
+          Es <strong>AGUA DULCE</strong> → Tiene poca sal.<br>
+          Los animales terrestres la necesitan para vivir.
+        </div>
+
+        <div class="info-block orange">
+          🚰 <strong>Agua potable</strong> → Es agua dulce que se ha <strong>limpiado</strong> para que podamos beberla sin hacernos daño.<br><br>
+          ❄️ <strong>Polos y montañas</strong> → El agua está en forma de <strong>nieve y hielo</strong>.
+        </div>
+
+        <div class="vocab-grid">
+          <div class="vocab-pill" onclick="speak('Agua salada. Es el agua de los mares y océanos. Tiene mucha sal y no podemos beberla.')">
+            <div class="vemoji">🌊</div>
+            <div class="vname">Agua salada</div>
+            <div class="vdef">Mares y océanos. No bebible</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Agua dulce. Es el agua de los ríos y lagos. Tiene poca sal.')">
+            <div class="vemoji">🏞️</div>
+            <div class="vname">Agua dulce</div>
+            <div class="vdef">Ríos y lagos. Poca sal</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Agua potable. Es el agua dulce que se ha limpiado para poder beberla.')">
+            <div class="vemoji">🚰</div>
+            <div class="vname">Agua potable</div>
+            <div class="vdef">Limpia. Se puede beber</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Es necesario ahorrar agua porque es un bien escaso.')">
+            <div class="vemoji">💚</div>
+            <div class="vname">¡Ahorra agua!</div>
+            <div class="vdef">El agua es un bien escaso</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('Recuerda: El agua salada está en los mares y océanos. No podemos beberla. El agua dulce está en los ríos, lagos y bajo tierra. El agua potable es agua dulce limpia que sí podemos beber.')">
+          🔊 Escuchar resumen
+        </button>
+      </div>
+    `
+  },
+
+  ciclo: {
+    title: 'El ciclo del agua',
+    emoji: '🔄',
+    color: '#6a1b9a',
+    content: `
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <span class="lesson-emoji">🔄</span>
+          <div>
+            <div class="section-label">El ciclo del agua</div>
+            <div class="lesson-title">¿De dónde viene y adónde va?</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('El agua de la naturaleza cambia de estado y se mueve constantemente de un lugar a otro. Este recorrido se llama ciclo del agua.')">
+          🔊 Escuchar explicación
+        </button>
+
+        <div class="info-block purple">
+          El agua cambia de estado y se mueve de un lugar a otro constantemente.<br>
+          Este recorrido se llama <strong>CICLO DEL AGUA</strong>. 🔄
+        </div>
+
+        <div class="illustration illus-cycle">
+          ☀️ → 💨 → ☁️ → 🌧️ → 🌊
+          <div class="illus-caption">El ciclo del agua nunca para</div>
+        </div>
+
+        <div class="section-label">Los 4 pasos del ciclo</div>
+        <div class="cycle-steps">
+          <div class="cycle-step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+              <strong>☀️ Evaporación:</strong> El sol calienta el agua del mar, ríos y lagos. El agua <strong>se evapora</strong> y sube al aire como vapor.
+              <br><button class="audio-btn" style="margin:5px 0 0;padding:6px 14px;font-size:0.85rem" onclick="speak('Paso uno. El sol calienta el agua del mar, los ríos y los lagos. Una parte del agua se evapora y pasa a formar parte del aire.')">🔊</button>
+            </div>
+          </div>
+          <div class="cycle-step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+              <strong>☁️ Condensación:</strong> El vapor de agua sube, se <strong>enfría</strong> y se convierte en pequeñas gotitas que forman las <strong>nubes</strong>.
+              <br><button class="audio-btn" style="margin:5px 0 0;padding:6px 14px;font-size:0.85rem" onclick="speak('Paso dos. El vapor de agua que hay en el aire se enfría y se convierte en diminutas gotas de agua que forman las nubes.')">🔊</button>
+            </div>
+          </div>
+          <div class="cycle-step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+              <strong>🌧️ Precipitación:</strong> Las gotitas de las nubes crecen y caen en forma de <strong>lluvia, nieve o granizo</strong>.
+              <br><button class="audio-btn" style="margin:5px 0 0;padding:6px 14px;font-size:0.85rem" onclick="speak('Paso tres. Las gotas de agua de las nubes aumentan de tamaño y caen en forma de lluvia, nieve o granizo.')">🔊</button>
+            </div>
+          </div>
+          <div class="cycle-step">
+            <div class="step-num">4</div>
+            <div class="step-text">
+              <strong>🌊 Vuelta al mar:</strong> El agua de la lluvia vuelve a los ríos y al mar, y el ciclo <strong>comienza de nuevo</strong>.
+              <br><button class="audio-btn" style="margin:5px 0 0;padding:6px 14px;font-size:0.85rem" onclick="speak('Paso cuatro. El agua de la lluvia vuelve otra vez a los ríos y al mar, y el ciclo comienza de nuevo.')">🔊</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('Recuerda el ciclo del agua: Primero, el sol evapora el agua. Segundo, el vapor forma nubes. Tercero, las nubes producen lluvia, nieve o granizo. Cuarto, el agua vuelve al mar y empieza otra vez.')">
+          🔊 Escuchar todo el ciclo
+        </button>
+      </div>
+    `
+  },
+
+  aire: {
+    title: 'Así es el aire',
+    emoji: '💨',
+    color: '#1565c0',
+    content: `
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <span class="lesson-emoji">💨</span>
+          <div>
+            <div class="section-label">El aire</div>
+            <div class="lesson-title">Así es el aire</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('El aire está en todas partes, aunque no podemos verlo ni tocarlo. El aire es una mezcla de gases. Uno de esos gases es el oxígeno, que todos los seres vivos necesitamos para vivir.')">
+          🔊 Escuchar explicación
+        </button>
+
+        <div class="illustration illus-sky">
+          🌬️ 🐦 🌳 🧒
+          <div class="illus-caption">El aire está en todas partes aunque no lo vemos</div>
+        </div>
+
+        <div class="info-block">
+          El aire <strong>está en todas partes</strong>, aunque no podemos verlo ni tocarlo.<br>
+          El aire es una <strong>MEZCLA DE GASES</strong>.<br>
+          Uno de esos gases es el <strong>oxígeno</strong> → que todos los seres vivos necesitamos para vivir. 🌱
+        </div>
+
+        <div class="vocab-grid">
+          <div class="vocab-pill" onclick="speak('El aire no tiene forma. Adquiere la forma del recipiente que lo contiene, como un globo.')">
+            <div class="vemoji">🎈</div>
+            <div class="vname">Sin forma propia</div>
+            <div class="vdef">Toma la forma del recipiente</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Oxígeno. Es un gas del aire que todos los seres vivos necesitamos para respirar y vivir.')">
+            <div class="vemoji">🌬️</div>
+            <div class="vname">Oxígeno</div>
+            <div class="vdef">Gas del aire. Lo necesitamos para vivir</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('El viento es el aire en movimiento. Cuando el aire se mueve podemos sentirlo y ver su efecto.')">
+            <div class="vemoji">🌪️</div>
+            <div class="vname">El viento</div>
+            <div class="vdef">El aire en movimiento</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('El aire no se puede ver ni tocar, pero sí podemos sentirlo cuando hay viento.')">
+            <div class="vemoji">👁️</div>
+            <div class="vname">Invisible</div>
+            <div class="vdef">No se ve ni se toca</div>
+          </div>
+        </div>
+
+        <div class="info-block orange">
+          🎈 El aire <strong>no tiene forma</strong> → adquiere la forma del recipiente que lo contiene (como un globo).<br><br>
+          💨 Cuando el aire <strong>se mueve</strong> → lo llamamos <strong>viento</strong>. Podemos sentirlo y ver su efecto.
+        </div>
+
+        <button class="audio-btn" onclick="speak('Recuerda sobre el aire: El aire está en todas partes pero no lo vemos. Es una mezcla de gases. Contiene oxígeno que necesitamos para vivir. No tiene forma propia. Cuando el aire se mueve se llama viento.')">
+          🔊 Escuchar resumen
+        </button>
+      </div>
+    `
+  },
+
+  tiempo: {
+    title: '¿Cómo sabemos qué tiempo hace?',
+    emoji: '🌈',
+    color: '#e65100',
+    content: `
+      <div class="lesson-card">
+        <div class="lesson-header">
+          <span class="lesson-emoji">🌈</span>
+          <div>
+            <div class="section-label">El tiempo atmosférico</div>
+            <div class="lesson-title">¿Qué tiempo hace?</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('La atmósfera es la capa de aire que rodea la Tierra. En ella tienen lugar los fenómenos atmosféricos como las precipitaciones, el viento y las tormentas.')">
+          🔊 Escuchar explicación
+        </button>
+
+        <div class="info-block">
+          La <strong>ATMÓSFERA</strong> es la capa de aire que rodea la Tierra.<br>
+          En ella ocurren los <strong>FENÓMENOS ATMOSFÉRICOS</strong>. 🌍
+        </div>
+
+        <div class="illustration illus-weather">
+          🌧️ 🌨️ 🌩️ 🌬️ 🌈 ☀️
+          <div class="illus-caption">Distintos fenómenos atmosféricos</div>
+        </div>
+
+        <div class="section-label">Fenómenos atmosféricos</div>
+        <div class="vocab-grid">
+          <div class="vocab-pill" onclick="speak('Precipitaciones. Son el agua que cae de las nubes en forma de lluvia, granizo o nieve.')">
+            <div class="vemoji">🌧️</div>
+            <div class="vname">Precipitaciones</div>
+            <div class="vdef">Lluvia, granizo o nieve que cae de las nubes</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('El viento es el aire en movimiento. Cuando es suave se llama brisa. Si es muy fuerte se llama huracán.')">
+            <div class="vemoji">💨</div>
+            <div class="vname">El viento</div>
+            <div class="vdef">Suave=brisa. Muy fuerte=huracán</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('Las tormentas llevan rayos, que emiten luz, y truenos, que podemos oír.')">
+            <div class="vemoji">⛈️</div>
+            <div class="vname">Tormentas</div>
+            <div class="vdef">Con rayos (luz) y truenos (sonido)</div>
+          </div>
+          <div class="vocab-pill" onclick="speak('El arco iris se puede ver en el cielo cuando luce el sol y llueve al mismo tiempo.')">
+            <div class="vemoji">🌈</div>
+            <div class="vname">Arco iris</div>
+            <div class="vdef">Sol + lluvia al mismo tiempo</div>
+          </div>
+        </div>
+
+        <div class="info-block orange">
+          Las <strong>precipitaciones</strong> 🌧️, el <strong>viento</strong> 💨 y la <strong>temperatura del aire</strong> 🌡️ nos permiten saber qué tiempo hace.
+        </div>
+
+        <div class="section-label">Instrumentos para medir el tiempo</div>
+        <div class="instrument-row">
+          <div class="instrument-card" onclick="speak('El pluviómetro mide la cantidad de agua que ha caído.')">
+            <div class="iemoji">🧪</div>
+            <div class="iname">Pluviómetro</div>
+            <div class="idef">Mide la cantidad de lluvia caída</div>
+          </div>
+          <div class="instrument-card" onclick="speak('La veleta indica la dirección en la que sopla el viento.')">
+            <div class="iemoji">🐓</div>
+            <div class="iname">Veleta</div>
+            <div class="idef">Indica la dirección del viento</div>
+          </div>
+          <div class="instrument-card" onclick="speak('El termómetro mide la temperatura del aire, es decir, cuánto calor o frío hace.')">
+            <div class="iemoji">🌡️</div>
+            <div class="iname">Termómetro</div>
+            <div class="idef">Mide el calor o el frío</div>
+          </div>
+        </div>
+
+        <button class="audio-btn" onclick="speak('Recuerda los instrumentos: El pluviómetro mide la lluvia. La veleta indica la dirección del viento. El termómetro mide la temperatura.')">
+          🔊 Escuchar los instrumentos
+        </button>
+      </div>
+    `
+  }
+};
+
+// ==================== QUESTIONS ====================
+
+const allQuestions = [
+  // AGUA
+  { topic:'agua', emoji:'💧', q:'¿El agua es inodora? ¿Qué significa inodora?', opts:['Sin color','Sin olor','Sin sabor','Sin forma'], correct:1, explanation:'¡Correcto! Inodora significa que el agua NO tiene olor.' },
+  { topic:'agua', emoji:'🧊', q:'¿Qué estado tiene el hielo?', opts:['Estado líquido','Estado gaseoso','Estado sólido','Estado vapor'], correct:2, explanation:'¡Muy bien! El hielo es agua en estado sólido.' },
+  { topic:'agua', emoji:'♨️', q:'¿En qué se convierte el agua cuando se calienta mucho?', opts:['En hielo','En vapor','En granizo','En nieve'], correct:1, explanation:'¡Exacto! El vapor es agua en estado gaseoso.' },
+  { topic:'agua', emoji:'💧', q:'¿Cómo se llama el estado del agua que bebemos normalmente?', opts:['Sólido','Gaseoso','Líquido','Vapor'], correct:2, explanation:'¡Genial! El agua que bebemos está en estado líquido.' },
+  { topic:'agua', emoji:'🌡️', q:'¿Qué ocurre cuando el agua se enfría mucho?', opts:['Se evapora','Se hace vapor','Se convierte en hielo','Desaparece'], correct:2, explanation:'¡Correcto! El agua muy fría se convierte en hielo.' },
+
+  // NATURALEZA
+  { topic:'naturaleza', emoji:'🌊', q:'¿Cómo es el agua de los mares y océanos?', opts:['Agua dulce','Agua potable','Agua salada','Agua de lluvia'], correct:2, explanation:'¡Muy bien! El agua del mar es agua salada.' },
+  { topic:'naturaleza', emoji:'🏞️', q:'¿Dónde encontramos agua dulce?', opts:['En los mares','En los océanos','En los ríos y lagos','En todos los océanos'], correct:2, explanation:'¡Genial! El agua dulce está en los ríos, lagos y bajo tierra.' },
+  { topic:'naturaleza', emoji:'🚰', q:'¿Qué es el agua potable?', opts:['Agua salada','Agua dulce limpia para beber','Agua del mar','Agua de las nubes'], correct:1, explanation:'¡Correcto! El agua potable es agua dulce limpia que podemos beber.' },
+  { topic:'naturaleza', emoji:'❄️', q:'¿En qué forma encontramos agua en los polos?', opts:['Vapor','Líquida','Lluvia','Hielo y nieve'], correct:3, explanation:'¡Exacto! En los polos el agua está en forma de hielo y nieve.' },
+  { topic:'naturaleza', emoji:'🌊', q:'¿Podemos beber el agua del mar?', opts:['Sí, siempre','Sí, si está fría','No, porque es salada','Sí, está limpia'], correct:2, explanation:'¡Muy bien! No podemos beber agua salada.' },
+
+  // CICLO
+  { topic:'ciclo', emoji:'🔄', q:'¿Cómo se llama el recorrido que hace el agua en la naturaleza?', opts:['Ciclo del aire','Ciclo del agua','Ciclo del viento','Ciclo del sol'], correct:1, explanation:'¡Correcto! Se llama ciclo del agua.' },
+  { topic:'ciclo', emoji:'☀️', q:'¿Qué hace el sol con el agua de los mares y ríos?', opts:['La congela','La evapora','La colorea','La mueve'], correct:1, explanation:'¡Genial! El sol calienta el agua y la evapora.' },
+  { topic:'ciclo', emoji:'☁️', q:'¿Qué son las nubes?', opts:['Humo del sol','Aire caliente','Pequeñas gotas de agua','Hielo del cielo'], correct:2, explanation:'¡Exacto! Las nubes están formadas por pequeñas gotas de agua.' },
+  { topic:'ciclo', emoji:'🌧️', q:'¿Cuál de estas NO es una precipitación?', opts:['Lluvia','Nieve','Granizo','Viento'], correct:3, explanation:'¡Muy bien! El viento NO es una precipitación. La lluvia, nieve y granizo sí.' },
+  { topic:'ciclo', emoji:'🔄', q:'¿Qué pasa con el agua de la lluvia al final?', opts:['Desaparece','Vuelve al mar y empieza de nuevo','Se queda en el suelo','Sube directamente al sol'], correct:1, explanation:'¡Correcto! El agua vuelve al mar y el ciclo empieza de nuevo.' },
+
+  // AIRE
+  { topic:'aire', emoji:'💨', q:'¿Qué es el aire?', opts:['Un líquido','Una mezcla de gases','Agua en vapor','Un sólido'], correct:1, explanation:'¡Muy bien! El aire es una mezcla de gases.' },
+  { topic:'aire', emoji:'🌬️', q:'¿Qué gas del aire necesitan los seres vivos para vivir?', opts:['Nitrógeno','Dióxido de carbono','Oxígeno','Hidrógeno'], correct:2, explanation:'¡Exacto! Los seres vivos necesitamos oxígeno para vivir.' },
+  { topic:'aire', emoji:'🎈', q:'¿Tiene forma propia el aire?', opts:['Sí, siempre redonda','Sí, es cuadrado','No, toma la forma del recipiente','Sí, es invisible'], correct:2, explanation:'¡Correcto! El aire no tiene forma propia y toma la del recipiente.' },
+  { topic:'aire', emoji:'💨', q:'¿Cómo se llama el aire cuando se mueve?', opts:['Lluvia','Tormenta','Arco iris','Viento'], correct:3, explanation:'¡Genial! El aire en movimiento se llama viento.' },
+  { topic:'aire', emoji:'👁️', q:'¿Podemos ver el aire?', opts:['Sí, es azul','No, no lo podemos ver','Sí, cuando hace calor','Solo de noche'], correct:1, explanation:'¡Correcto! No podemos ver el aire, aunque está en todas partes.' },
+
+  // TIEMPO
+  { topic:'tiempo', emoji:'🌍', q:'¿Qué es la atmósfera?', opts:['El agua del mar','La tierra del planeta','La capa de aire que rodea la Tierra','Las nubes del cielo'], correct:2, explanation:'¡Muy bien! La atmósfera es la capa de aire que rodea la Tierra.' },
+  { topic:'tiempo', emoji:'🌧️', q:'¿Qué son las precipitaciones?', opts:['El viento fuerte','Los rayos de las tormentas','El agua que cae de las nubes','La temperatura del aire'], correct:2, explanation:'¡Correcto! Las precipitaciones son el agua que cae de las nubes en forma de lluvia, nieve o granizo.' },
+  { topic:'tiempo', emoji:'💨', q:'¿Cómo se llama el viento suave?', opts:['Huracán','Tormenta','Brisa','Tornado'], correct:2, explanation:'¡Exacto! El viento suave se llama brisa.' },
+  { topic:'tiempo', emoji:'🌈', q:'¿Cuándo aparece el arco iris?', opts:['Solo cuando llueve','Solo cuando hace sol','Cuando llueve y hace sol a la vez','Solo por la noche'], correct:2, explanation:'¡Genial! El arco iris aparece cuando hay sol y lluvia al mismo tiempo.' },
+  { topic:'tiempo', emoji:'🌡️', q:'¿Para qué sirve el termómetro?', opts:['Medir la lluvia','Indicar la dirección del viento','Medir la temperatura','Ver las nubes'], correct:2, explanation:'¡Correcto! El termómetro mide la temperatura del aire.' },
+  { topic:'tiempo', emoji:'🐓', q:'¿Para qué sirve la veleta?', opts:['Medir la lluvia','Indicar la dirección del viento','Medir la temperatura','Predecir tormentas'], correct:1, explanation:'¡Muy bien! La veleta indica la dirección en la que sopla el viento.' },
+  { topic:'tiempo', emoji:'🧪', q:'¿Para qué sirve el pluviómetro?', opts:['Mide el calor','Indica la dirección del viento','Mide la cantidad de lluvia','Mide la velocidad del viento'], correct:2, explanation:'¡Exacto! El pluviómetro mide la cantidad de agua que ha caído.' },
+  { topic:'tiempo', emoji:'⛈️', q:'Las tormentas van acompañadas de rayos y...', opts:['Arco iris','Truenos','Nieve','Brisa'], correct:1, explanation:'¡Correcto! Las tormentas llevan rayos (que emiten luz) y truenos (que podemos oír).' },
+];
+
+// ==================== STATE ====================
+
+let currentTopic = null;
+let currentQuestions = [];
+let currentQIndex = 0;
+let currentScore = 0;
+let totalStars = 0;
+let completedTopics = {};
+
+// ==================== AUDIO ====================
+
+function speak(text) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'es-ES';
+    utt.rate = 0.9;
+    utt.pitch = 1.1;
+    window.speechSynthesis.speak(utt);
+  } else {
+    alert('Tu navegador no soporta audio. Puedes leer el texto en pantalla.');
+  }
+}
+
+// ==================== NAVIGATION ====================
+
+function showMenu() {
+  document.getElementById('menu').style.display = 'block';
+  document.getElementById('lesson').style.display = 'none';
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  updateBadges();
+}
+
+function startLesson(topic) {
+  currentTopic = topic;
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('lesson').style.display = 'block';
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('lessonContent').innerHTML = lessons[topic].content;
+  window.scrollTo(0,0);
+  speak('¡Vamos a aprender sobre ' + lessons[topic].title + '! Lee la información y pulsa los botones para escuchar las explicaciones.');
+}
+
+function startTopicQuiz() {
+  const qs = allQuestions.filter(q => q.topic === currentTopic);
+  currentQuestions = shuffle(qs).slice(0, Math.min(8, qs.length));
+  launchQuiz(currentTopic);
+}
+
+function startMegaQuiz() {
+  currentTopic = 'all';
+  currentQuestions = shuffle(allQuestions).slice(0, 15);
+  launchQuiz('all');
+}
+
+function launchQuiz(topic) {
+  currentQIndex = 0;
+  currentScore = 0;
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('lesson').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  showQuestion();
+  window.scrollTo(0,0);
+}
+
+// ==================== QUIZ LOGIC ====================
+
+function showQuestion() {
+  const q = currentQuestions[currentQIndex];
+  const total = currentQuestions.length;
+
+  document.getElementById('qCounter').textContent = `Pregunta ${currentQIndex+1}/${total}`;
+  document.getElementById('qScore').textContent = `⭐ ${currentScore}`;
+  document.getElementById('quizProgress').style.width = `${(currentQIndex/total)*100}%`;
+  document.getElementById('qEmoji').textContent = q.emoji;
+  document.getElementById('qText').textContent = q.q;
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('quizNav').style.display = 'none';
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i, q, btn);
+    grid.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx, q, btn) {
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+
+  if (idx === q.correct) {
+    btn.classList.add('correct');
+    currentScore++;
+    fb.className = 'feedback correct';
+    fb.textContent = '✅ ' + q.explanation;
+    speak('¡Correcto! ' + q.explanation);
+    spawnConfetti();
+  } else {
+    btn.classList.add('wrong');
+    allBtns[q.correct].classList.add('correct');
+    fb.className = 'feedback wrong';
+    fb.textContent = '❌ ' + q.explanation;
+    speak('Casi. ' + q.explanation);
+  }
+
+  document.getElementById('quizNav').style.display = 'flex';
+  document.getElementById('qScore').textContent = `⭐ ${currentScore}`;
+}
+
+function nextQuestion() {
+  currentQIndex++;
+  if (currentQIndex < currentQuestions.length) {
+    showQuestion();
+  } else {
+    showResults();
+  }
+}
+
+// ==================== RESULTS ====================
+
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const total = currentQuestions.length;
+  const pct = Math.round((currentScore / total) * 100);
+  let stars = 1, emoji = '😊', title = '¡Sigue intentándolo!', msg = '';
+
+  if (pct >= 90) { stars = 3; emoji = '🏆'; title = '¡INCREÍBLE! ¡Eres un campeón!'; }
+  else if (pct >= 70) { stars = 2; emoji = '🌟'; title = '¡Muy bien! ¡Lo estás haciendo genial!'; }
+  else if (pct >= 50) { stars = 1; emoji = '😊'; title = '¡Bien! ¡Puedes mejorar!'; }
+  else { stars = 0; emoji = '📚'; title = '¡A estudiar un poco más!'; }
+
+  if (pct >= 90) msg = '¡Aprobado con nota! Estás listo para el examen.';
+  else if (pct >= 70) msg = '¡Buen trabajo! Repasa un poco y lo bordas.';
+  else if (pct >= 50) msg = 'Vuelve a la lección y luego repite el quiz.';
+  else msg = 'Lee bien la lección y vuelve a intentarlo. ¡Tú puedes!';
+
+  document.getElementById('resultsEmoji').textContent = emoji;
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsScore').textContent = `${currentScore} / ${total} (${pct}%)`;
+  document.getElementById('resultsStars').innerHTML = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('resultsMsg').textContent = msg;
+
+  if (currentTopic !== 'all') {
+    completedTopics[currentTopic] = Math.max(completedTopics[currentTopic] || 0, stars);
+  }
+
+  speak(title + ' Has acertado ' + currentScore + ' de ' + total + ' preguntas. ' + msg);
+
+  document.getElementById('retryBtn').onclick = () => {
+    if (currentTopic === 'all') startMegaQuiz();
+    else startTopicQuiz();
+  };
+
+  window.scrollTo(0,0);
+  spawnConfetti(stars * 3);
+}
+
+// ==================== UTILS ====================
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateBadges() {
+  const icons = { 0: '📖', 1: '⭐', 2: '🌟', 3: '🏆' };
+  for (const [topic, stars] of Object.entries(completedTopics)) {
+    const el = document.getElementById('badge-' + topic);
+    if (el) el.textContent = icons[stars] || '📖';
+  }
+}
+
+function spawnConfetti(count = 8) {
+  const colors = ['#FFD700','#FF69B4','#00CED1','#FF6347','#7CFC00','#DDA0DD'];
+  const emojis = ['⭐','🌟','✨','🎉','🎊','💫'];
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti';
+      el.style.cssText = `
+        left: ${Math.random() * 100}vw;
+        top: -20px;
+        font-size: ${1 + Math.random()}rem;
+        animation: fall ${1 + Math.random() * 2}s ease-in forwards;
+        color: ${colors[Math.floor(Math.random()*colors.length)]};
+      `;
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 100);
+  }
+}
+
+// CSS for confetti fall
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+// Init
+showMenu();
+</script>
+</body>
+</html>

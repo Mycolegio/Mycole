@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐾 Animal Fun! 🐾</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800&family=Bubblegum+Sans&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1: #1a1a2e;
+  --bg2: #16213e;
+  --card: #0f3460;
+  --accent: #e94560;
+  --gold: #f5a623;
+  --green: #00c897;
+  --red: #ff4757;
+  --blue: #00b4d8;
+  --purple: #7c3aed;
+  --white: #f0f0f0;
+  --soft: rgba(255,255,255,0.07);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+body {
+  font-family: 'Baloo 2', cursive;
+  background: var(--bg1);
+  min-height: 100vh;
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* === BG STARS === */
+.stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at 20% 80%, #7c3aed22 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, #e9456022 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 50%, #00b4d811 0%, transparent 70%);
+}
+.star-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.4); }
+}
+
+/* === CONFETTI === */
+.confetti-piece {
+  position: fixed;
+  top: -20px;
+  pointer-events: none;
+  z-index: 999;
+  border-radius: 3px;
+  animation: confetti-fall var(--dur,1.5s) ease-in var(--delay,0s) forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* === LAYOUT === */
+#app {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 16px 50px;
+  min-height: 100vh;
+}
+
+/* === HEADER === */
+header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+h1 {
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: clamp(2.2rem, 9vw, 3.5rem);
+  background: linear-gradient(135deg, #f5a623, #e94560, #7c3aed, #00c897);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px #e9456055);
+  letter-spacing: 2px;
+}
+.subtitle {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+
+/* === SCORE BAR === */
+#scorebar {
+  display: flex; gap: 10px; align-items: center; justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  background: var(--soft);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 10px 24px;
+  backdrop-filter: blur(10px);
+}
+.sc { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 1.05rem; }
+.sc .ico { font-size: 1.3rem; }
+.sc .num { font-family: 'Bubblegum Sans', cursive; font-size: 1.5rem; }
+.sc.green .num { color: var(--green); }
+.sc.red .num { color: var(--red); }
+.sc.gold .num { color: var(--gold); }
+.divider { width: 1px; height: 28px; background: rgba(255,255,255,0.15); }
+
+/* === PROGRESS === */
+#progress-wrap {
+  width: 100%; max-width: 480px;
+  height: 12px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px; overflow: hidden;
+  margin-bottom: 20px;
+}
+#progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--accent), var(--gold));
+  border-radius: 20px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* === GAME AREA === */
+#game-area {
+  width: 100%; max-width: 500px;
+}
+
+/* === QUESTION CARD === */
+.q-card {
+  background: linear-gradient(145deg, #1e3a5f, #0f3460);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 28px;
+  padding: 28px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  animation: slide-in 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
+  margin-bottom: 16px;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(30px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.q-card.shake {
+  animation: shake 0.45s ease;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-14px); }
+  40% { transform: translateX(14px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+}
+.q-card.flash-good {
+  animation: flash-good 0.5s ease;
+}
+@keyframes flash-good {
+  0%,100% { background: linear-gradient(145deg, #1e3a5f, #0f3460); }
+  40% { background: linear-gradient(145deg, #0a4a3a, #064035); }
+}
+
+/* === ANIMAL DISPLAY === */
+.animal-display {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.animal-emoji-big {
+  font-size: clamp(4rem, 16vw, 6rem);
+  display: block;
+  animation: float-animal 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+}
+@keyframes float-animal {
+  0%,100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+.animal-label {
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  color: var(--gold);
+  margin-top: 4px;
+}
+
+/* === QUESTION TEXT === */
+.q-text {
+  text-align: center;
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 6px;
+}
+.q-verb {
+  text-align: center;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: clamp(1.8rem, 7vw, 2.5rem);
+  color: var(--blue);
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px #00b4d888;
+}
+
+/* ============ TYPE 1: YES/NO ============ */
+.yesno-btns {
+  display: flex; gap: 14px;
+}
+.btn-yn {
+  flex: 1; padding: 18px 10px;
+  border: none; border-radius: 20px;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.btn-yn:hover { transform: translateY(-4px) scale(1.04); }
+.btn-yn:active { transform: translateY(2px); }
+.btn-yn.yes-btn {
+  background: linear-gradient(145deg, #00c897, #00a07a);
+  color: white;
+  box-shadow: 0 8px 0 #006b52;
+}
+.btn-yn.no-btn {
+  background: linear-gradient(145deg, #ff4757, #c0392b);
+  color: white;
+  box-shadow: 0 8px 0 #7a1a1a;
+}
+.btn-yn .big-icon { font-size: 2rem; }
+
+/* ============ TYPE 2: PICK THE ANIMAL ============ */
+.animals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.btn-animal {
+  background: var(--soft);
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 16px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  color: white;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 1rem;
+}
+.btn-animal:hover {
+  border-color: var(--blue);
+  background: rgba(0,180,216,0.15);
+  transform: scale(1.05);
+}
+.btn-animal .em { font-size: 2.8rem; }
+.btn-animal.correct-pick {
+  border-color: var(--green);
+  background: rgba(0,200,151,0.25);
+}
+.btn-animal.wrong-pick {
+  border-color: var(--red);
+  background: rgba(255,71,87,0.2);
+}
+
+/* ============ TYPE 3: FILL THE BLANK ============ */
+.fill-sentence {
+  text-align: center;
+  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  margin-bottom: 18px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.85);
+}
+.blank {
+  display: inline-block;
+  min-width: 80px;
+  border-bottom: 3px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 1.4rem;
+  padding: 0 8px;
+  margin: 0 4px;
+}
+.verb-options {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+.btn-verb {
+  background: rgba(124,58,237,0.25);
+  border: 2px solid rgba(124,58,237,0.5);
+  border-radius: 50px;
+  color: white;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 1.1rem;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+.btn-verb:hover {
+  background: rgba(124,58,237,0.5);
+  border-color: var(--purple);
+  transform: scale(1.08);
+}
+.btn-verb.correct-verb {
+  background: rgba(0,200,151,0.3);
+  border-color: var(--green);
+}
+.btn-verb.wrong-verb {
+  background: rgba(255,71,87,0.25);
+  border-color: var(--red);
+}
+
+/* === FEEDBACK === */
+#feedback {
+  text-align: center;
+  min-height: 58px;
+  padding: 0 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.fb-text {
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: clamp(1.3rem, 5vw, 1.7rem);
+  animation: pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.fb-text.fb-correct { color: var(--green); }
+.fb-text.fb-wrong { color: var(--red); }
+.fb-hint { font-size: 0.95rem; color: rgba(255,255,255,0.55); margin-top: 4px; }
+
+/* === NEXT BUTTON === */
+#btn-next {
+  display: none;
+  margin: 8px auto 0;
+  padding: 14px 40px;
+  background: linear-gradient(135deg, var(--purple), var(--accent));
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(233,69,96,0.4);
+  animation: pulse-next 1.2s ease-in-out infinite;
+  transition: transform 0.15s;
+}
+#btn-next:hover { transform: scale(1.06); }
+@keyframes pulse-next {
+  0%,100% { box-shadow: 0 6px 24px rgba(233,69,96,0.4); }
+  50% { box-shadow: 0 6px 40px rgba(233,69,96,0.7); }
+}
+
+/* === TYPE BADGE === */
+.type-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 50px;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* === END SCREEN === */
+#end-screen {
+  display: none;
+  flex-direction: column; align-items: center; text-align: center;
+  background: linear-gradient(145deg, #1e3a5f, #0f3460);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 32px;
+  padding: 40px 32px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  max-width: 460px; width: 100%;
+  animation: slide-in 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+#end-screen .trophy { font-size: 5rem; margin-bottom: 12px; animation: float-animal 2s ease-in-out infinite; }
+#end-screen h2 { font-family: 'Bubblegum Sans', cursive; font-size: 2.2rem; margin-bottom: 8px;
+  background: linear-gradient(135deg, var(--gold), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+#end-screen .end-msg { font-size: 1.15rem; color: rgba(255,255,255,0.7); margin-bottom: 20px; }
+#end-screen .end-stats {
+  display: flex; gap: 24px; justify-content: center; margin-bottom: 28px;
+  background: rgba(0,0,0,0.2); border-radius: 20px; padding: 16px 28px;
+}
+#end-screen .stat { text-align: center; }
+#end-screen .stat .stat-num { font-family: 'Bubblegum Sans', cursive; font-size: 2.5rem; display: block; }
+#end-screen .stat .stat-lbl { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+.stat-correct .stat-num { color: var(--green); }
+.stat-wrong .stat-num { color: var(--red); }
+
+#btn-restart {
+  padding: 16px 42px;
+  background: linear-gradient(135deg, var(--gold), #e0881a);
+  color: #1a1a2e;
+  border: none; border-radius: 50px;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #9a5c00;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+#btn-restart:hover { transform: translateY(-3px); }
+#btn-restart:active { transform: translateY(3px); box-shadow: 0 3px 0 #9a5c00; }
+
+/* === VERB REMINDER === */
+#verb-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  max-width: 480px; margin-bottom: 16px;
+}
+.vchip {
+  background: rgba(0,180,216,0.15);
+  border: 1px solid rgba(0,180,216,0.35);
+  border-radius: 50px;
+  padding: 4px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div id="app">
+  <header>
+    <h1>🐾 Animal Fun! 🐾</h1>
+    <div class="subtitle">Can it or can't it?</div>
+  </header>
+
+  <!-- Score -->
+  <div id="scorebar">
+    <div class="sc green"><span class="ico">⭐</span><span class="num" id="val-ok">0</span></div>
+    <div class="divider"></div>
+    <div class="sc red"><span class="ico">❌</span><span class="num" id="val-err">0</span></div>
+    <div class="divider"></div>
+    <div class="sc gold"><span class="ico">🎯</span><span class="num" id="val-rnd">1/12</span></div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-wrap"><div id="progress-bar" style="width:0%"></div></div>
+
+  <!-- Verb reminder -->
+  <div id="verb-bar">
+    <span class="vchip">🦘 jump</span>
+    <span class="vchip">🏊 swim</span>
+    <span class="vchip">🏃 run</span>
+    <span class="vchip">🦋 fly</span>
+    <span class="vchip">🚶 walk</span>
+    <span class="vchip">🎵 sing</span>
+  </div>
+
+  <!-- Game area -->
+  <div id="game-area"></div>
+
+  <!-- Feedback -->
+  <div id="feedback"></div>
+
+  <!-- Next -->
+  <button id="btn-next" onclick="nextQ()">Next ➡️</button>
+
+  <!-- End -->
+  <div id="end-screen">
+    <div class="trophy" id="end-trophy">🏆</div>
+    <h2 id="end-title">Amazing!</h2>
+    <div class="end-msg" id="end-msg"></div>
+    <div class="end-stats">
+      <div class="stat stat-correct">
+        <span class="stat-num" id="end-ok">0</span>
+        <span class="stat-lbl">Correct ⭐</span>
+      </div>
+      <div class="stat stat-wrong">
+        <span class="stat-num" id="end-err">0</span>
+        <span class="stat-lbl">Wrong ❌</span>
+      </div>
+    </div>
+    <button id="btn-restart" onclick="restart()">🔄 Play Again!</button>
+  </div>
+</div>
+
+<script>
+// ====== DATA ======
+const ANIMALS = [
+  { e:'🐟', n:'Fish',      can:['swim'],               cant:['jump','run','fly','walk','sing'] },
+  { e:'🐦', n:'Bird',      can:['fly','sing','walk'],  cant:['swim','run','jump'] },
+  { e:'🐸', n:'Frog',      can:['jump','swim','run'],  cant:['fly','sing','walk'] },
+  { e:'🐶', n:'Dog',       can:['run','swim','walk','jump'], cant:['fly','sing'] },
+  { e:'🦁', n:'Lion',      can:['run','jump','walk'],  cant:['fly','swim','sing'] },
+  { e:'🐘', n:'Elephant',  can:['walk','run','swim'],  cant:['fly','jump','sing'] },
+  { e:'🐧', n:'Penguin',   can:['swim','walk'],        cant:['fly','jump','run','sing'] },
+  { e:'🦅', n:'Eagle',     can:['fly','walk'],         cant:['swim','run','jump','sing'] },
+  { e:'🐬', n:'Dolphin',   can:['swim','jump'],        cant:['run','fly','walk','sing'] },
+  { e:'🐢', n:'Turtle',    can:['swim','walk'],        cant:['run','fly','jump','sing'] },
+  { e:'🦊', n:'Fox',       can:['run','jump','walk'],  cant:['fly','swim','sing'] },
+  { e:'🦋', n:'Butterfly', can:['fly'],                cant:['swim','run','jump','walk','sing'] },
+  { e:'🐊', n:'Crocodile', can:['swim','walk','run'],  cant:['fly','jump','sing'] },
+  { e:'🐨', n:'Koala',     can:['walk','jump'],        cant:['fly','swim','run','sing'] },
+  { e:'🦜', n:'Parrot',    can:['fly','sing','walk'],  cant:['swim','jump','run'] },
+];
+const VERBS = ['jump','swim','run','fly','walk','sing'];
+const VERB_EMOJI = { jump:'🦘', swim:'🏊', run:'🏃', fly:'🦋', walk:'🚶', sing:'🎵' };
+const TOTAL = 12;
+
+// ====== STATE ======
+let questions = [], cur = 0, ok = 0, err = 0, answered = false;
+
+// ====== HELPERS ======
+function shuffle(a){ return [...a].sort(()=>Math.random()-0.5); }
+function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
+function canDo(animal, verb){ return animal.can.includes(verb); }
+
+// ====== QUESTION GENERATORS ======
+function makeYesNo(pool){
+  const entry = rand(pool);
+  const allVerbs = [...entry.can, ...entry.cant];
+  const verb = rand(allVerbs);
+  const correct = canDo(entry, verb);
+  return {
+    type: 'yesno',
+    animal: entry,
+    verb,
+    correct, // true = It CAN, false = It CAN'T
+    label: '👆 Yes or No?'
+  };
+}
+
+function makePickAnimal(pool){
+  // pick a verb and find animals that CAN do it
+  const verb = rand(VERBS);
+  const canAnimals = ANIMALS.filter(a => a.can.includes(verb));
+  const cantAnimals = ANIMALS.filter(a => a.cant.includes(verb));
+  if(canAnimals.length < 1 || cantAnimals.length < 2) return makeYesNo(pool);
+  const correct = rand(canAnimals);
+  const wrongs = shuffle(cantAnimals).slice(0, 3);
+  const options = shuffle([correct, ...wrongs]);
+  return {
+    type: 'pick',
+    verb,
+    correct,
+    options,
+    label: '👆 Pick the animal!'
+  };
+}
+
+function makeFillBlank(pool){
+  const entry = rand(pool);
+  // Pick sentence type: can or can't
+  const useCan = Math.random() > 0.4;
+  const correctVerb = useCan ? rand(entry.can) : rand(entry.cant);
+  // Distractor verbs
+  const otherVerbs = VERBS.filter(v => v !== correctVerb);
+  const distractors = shuffle(otherVerbs).slice(0,3);
+  const options = shuffle([correctVerb, ...distractors]);
+  return {
+    type: 'fill',
+    animal: entry,
+    useCan,
+    correctVerb,
+    options,
+    label: '👆 Complete the sentence!'
+  };
+}
+
+function generateQuestions(){
+  const pool = shuffle(ANIMALS);
+  const qs = [];
+  const types = shuffle(['yesno','yesno','yesno','yesno','pick','pick','pick','pick','fill','fill','fill','fill']);
+  for(let i=0;i<TOTAL;i++){
+    const t = types[i % types.length];
+    if(t==='yesno') qs.push(makeYesNo(pool));
+    else if(t==='pick') qs.push(makePickAnimal(pool));
+    else qs.push(makeFillBlank(pool));
+  }
+  return qs;
+}
+
+// ====== RENDER ======
+function renderQ(){
+  answered = false;
+  const q = questions[cur];
+  const area = document.getElementById('game-area');
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('val-rnd').textContent = (cur+1)+'/'+TOTAL;
+  document.getElementById('progress-bar').style.width = (cur/TOTAL*100)+'%';
+
+  if(q.type === 'yesno') area.innerHTML = renderYesNo(q);
+  else if(q.type === 'pick') area.innerHTML = renderPick(q);
+  else area.innerHTML = renderFill(q);
+}
+
+function renderYesNo(q){
+  return `
+    <div class="q-card" id="qcard">
+      <div style="text-align:center;margin-bottom:16px">
+        <span class="type-badge">✅ Can it? Quiz</span>
+      </div>
+      <div class="animal-display">
+        <span class="animal-emoji-big">${q.animal.e}</span>
+        <div class="animal-label">${q.animal.n}</div>
+      </div>
+      <div class="q-text">Can it...</div>
+      <div class="q-verb">${VERB_EMOJI[q.verb]} ${q.verb}?</div>
+      <div class="yesno-btns">
+        <button class="btn-yn yes-btn" onclick="answerYN(true)">
+          <span class="big-icon">✅</span>
+          It CAN!
+        </button>
+        <button class="btn-yn no-btn" onclick="answerYN(false)">
+          <span class="big-icon">❌</span>
+          It CAN'T!
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderPick(q){
+  const opts = q.options.map((a,i) => `
+    <button class="btn-animal" onclick="answerPick(${i})" id="pick-${i}">
+      <span class="em">${a.e}</span>
+      <span>${a.n}</span>
+    </button>`).join('');
+  return `
+    <div class="q-card" id="qcard">
+      <div style="text-align:center;margin-bottom:16px">
+        <span class="type-badge">🔍 Find the Animal!</span>
+      </div>
+      <div class="q-text">Which animal can...</div>
+      <div class="q-verb">${VERB_EMOJI[q.verb]} ${q.verb}?</div>
+      <div class="animals-grid">${opts}</div>
+    </div>`;
+}
+
+function renderFill(q){
+  const sentence = q.useCan
+    ? `The ${q.animal.n} <strong style="color:var(--green)">can</strong> <span class="blank" id="blank">___</span>.`
+    : `The ${q.animal.n} <strong style="color:var(--red)">can't</strong> <span class="blank" id="blank">___</span>.`;
+  const opts = q.options.map((v,i) => `
+    <button class="btn-verb" onclick="answerFill('${v}',${i})" id="fill-${i}">
+      ${VERB_EMOJI[v]} ${v}
+    </button>`).join('');
+  return `
+    <div class="q-card" id="qcard">
+      <div style="text-align:center;margin-bottom:16px">
+        <span class="type-badge">✏️ Fill the Blank!</span>
+      </div>
+      <div class="animal-display">
+        <span class="animal-emoji-big">${q.animal.e}</span>
+        <div class="animal-label">${q.animal.n}</div>
+      </div>
+      <div class="fill-sentence">${sentence}</div>
+      <div class="verb-options">${opts}</div>
+    </div>`;
+}
+
+// ====== ANSWER HANDLERS ======
+function answerYN(userYes){
+  if(answered) return;
+  answered = true;
+  const q = questions[cur];
+  const isCorrect = (userYes === q.correct);
+  document.querySelectorAll('.btn-yn').forEach(b => b.disabled = true);
+  handleResult(isCorrect, q.correct
+    ? `It CAN ${q.verb}! ✅`
+    : `It CAN'T ${q.verb}! ❌`);
+}
+
+function answerPick(idx){
+  if(answered) return;
+  answered = true;
+  const q = questions[cur];
+  const chosen = q.options[idx];
+  const isCorrect = chosen === q.correct;
+  document.querySelectorAll('.btn-animal').forEach(b => b.disabled = true);
+  const correctIdx = q.options.indexOf(q.correct);
+  document.getElementById('pick-'+correctIdx).classList.add('correct-pick');
+  if(!isCorrect) document.getElementById('pick-'+idx).classList.add('wrong-pick');
+  handleResult(isCorrect, `${q.correct.e} ${q.correct.n} can ${q.verb}! ✅`);
+}
+
+function answerFill(verb, idx){
+  if(answered) return;
+  answered = true;
+  const q = questions[cur];
+  const isCorrect = verb === q.correctVerb;
+  document.querySelectorAll('.btn-verb').forEach(b => b.disabled = true);
+  // show correct verb
+  const blank = document.getElementById('blank');
+  if(blank) blank.textContent = q.correctVerb;
+  // color chosen
+  const chosenEl = document.getElementById('fill-'+idx);
+  if(chosenEl) chosenEl.classList.add(isCorrect ? 'correct-verb' : 'wrong-verb');
+  // highlight correct
+  document.querySelectorAll('.btn-verb').forEach(b => {
+    if(b.textContent.trim().includes(q.correctVerb)) b.classList.add('correct-verb');
+  });
+  const answer = q.useCan
+    ? `It CAN ${q.correctVerb}! ✅`
+    : `It CAN'T ${q.correctVerb}! ❌`;
+  handleResult(isCorrect, answer);
+}
+
+function handleResult(isCorrect, hint){
+  const card = document.getElementById('qcard');
+  const fb = document.getElementById('feedback');
+  if(isCorrect){
+    ok++;
+    document.getElementById('val-ok').textContent = ok;
+    const msgs = ['🎉 Super!','⭐ Excellent!','🌟 Amazing!','👏 Perfect!','🥳 Brilliant!','🎊 Well done!'];
+    fb.innerHTML = `<div class="fb-text fb-correct">${rand(msgs)}</div><div class="fb-hint">${hint}</div>`;
+    card && card.classList.add('flash-good');
+    setTimeout(()=> card && card.classList.remove('flash-good'), 600);
+    spawnConfetti();
+  } else {
+    err++;
+    document.getElementById('val-err').textContent = err;
+    const msgs = ['😮 Oops!','🤔 Not quite!','😅 Try again!','💪 Keep going!'];
+    fb.innerHTML = `<div class="fb-text fb-wrong">${rand(msgs)}</div><div class="fb-hint">Answer: ${hint}</div>`;
+    card && card.classList.add('shake');
+    setTimeout(()=> card && card.classList.remove('shake'), 500);
+  }
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQ(){
+  cur++;
+  if(cur >= TOTAL) showEnd();
+  else renderQ();
+}
+
+function showEnd(){
+  document.getElementById('progress-bar').style.width = '100%';
+  document.getElementById('game-area').innerHTML = '';
+  document.getElementById('feedback').innerHTML = '';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('verb-bar').style.display = 'none';
+
+  const es = document.getElementById('end-screen');
+  es.style.display = 'flex';
+  document.getElementById('end-ok').textContent = ok;
+  document.getElementById('end-err').textContent = err;
+
+  const pct = ok/TOTAL;
+  let trophy='🏆', title='Well done!', msg='';
+  if(pct===1){ trophy='🌟'; title='PERFECT!'; msg='You are an English SUPERSTAR! ⭐⭐⭐'; }
+  else if(pct>=0.8){ trophy='🏆'; title='Excellent!'; msg='You are really good at this! 🎉'; }
+  else if(pct>=0.6){ trophy='😊'; title='Good job!'; msg='Keep practising and you will be a star! 💪'; }
+  else { trophy='📚'; title='Keep going!'; msg="Don't give up! You are learning! 🌈"; }
+
+  document.getElementById('end-trophy').textContent = trophy;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-msg').textContent = msg;
+
+  for(let i=0;i<30;i++) setTimeout(()=>spawnConfetti(), i*80);
+}
+
+function restart(){
+  cur=0; ok=0; err=0;
+  document.getElementById('val-ok').textContent='0';
+  document.getElementById('val-err').textContent='0';
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('verb-bar').style.display='';
+  questions = generateQuestions();
+  renderQ();
+}
+
+// ====== CONFETTI ======
+const CONF_COLORS = ['#f5a623','#e94560','#00c897','#00b4d8','#7c3aed','#ff6eb4','#fff'];
+function spawnConfetti(){
+  for(let i=0;i<8;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left:${Math.random()*100}vw;
+      width:${6+Math.random()*8}px;
+      height:${10+Math.random()*10}px;
+      background:${CONF_COLORS[Math.floor(Math.random()*CONF_COLORS.length)]};
+      --dur:${1+Math.random()*0.8}s;
+      --delay:${Math.random()*0.3}s;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 2500);
+  }
+}
+
+// ====== BG STARS ======
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s = document.createElement('div');
+    s.className = 'star-dot';
+    const sz = Math.random()*2.5+1;
+    s.style.cssText = `
+      width:${sz}px; height:${sz}px;
+      top:${Math.random()*100}%;
+      left:${Math.random()*100}%;
+      --d:${2+Math.random()*4}s;
+      --delay:${-Math.random()*4}s;
+    `;
+    c.appendChild(s);
+  }
+})();
+
+// ====== INIT ======
+questions = generateQuestions();
+renderQ();
+</script>
+</body>
+</html>

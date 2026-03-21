@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🪙 ¡Aprendo el Euro! 🪙</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f5c518;
+    --gold2: #e8a500;
+    --blue: #1a73e8;
+    --green: #22c55e;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --orange: #f97316;
+    --bg: #fff9e6;
+    --card: #ffffff;
+    --shadow: 0 8px 32px rgba(0,0,0,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ESTRELLAS DE FONDO */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #ffd70044 2px, transparent 2px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a73e8 0%, #7c3aed 100%);
+    color: white;
+    text-align: center;
+    padding: 18px 20px 14px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+  }
+  header p { font-size: 1rem; opacity: 0.9; margin-top: 4px; }
+
+  /* BARRA DE PUNTOS */
+  #scorebar {
+    display: flex; align-items: center; justify-content: center; gap: 18px;
+    background: linear-gradient(90deg, #f5c518, #f97316);
+    padding: 10px 20px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: #333;
+    position: relative; z-index: 1;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  }
+  #scorebar span { background: white; border-radius: 30px; padding: 4px 16px; font-size: 1.1rem; }
+
+  /* TABS */
+  #tabs {
+    display: flex; gap: 8px; justify-content: center;
+    padding: 18px 20px 6px;
+    position: relative; z-index: 1;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    padding: 10px 22px;
+    border: 3px solid transparent;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all .2s;
+    background: white;
+    color: #555;
+    box-shadow: var(--shadow);
+  }
+  .tab-btn:hover { transform: translateY(-2px); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #1a73e8, #7c3aed);
+    color: white;
+    border-color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(26,115,232,0.35);
+  }
+
+  /* SECCIONES */
+  .section {
+    display: none;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+    position: relative; z-index: 1;
+  }
+  .section.active { display: block; }
+
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #1a73e8;
+    text-shadow: 2px 2px 0 #c7e0ff;
+  }
+
+  /* ===== MONEDAS ===== */
+  .coins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+  .coin-card {
+    background: white;
+    border-radius: 20px;
+    padding: 16px 10px 12px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all .2s;
+    border: 3px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  .coin-card:hover {
+    transform: translateY(-6px) scale(1.04);
+    border-color: var(--gold);
+    box-shadow: 0 12px 30px rgba(245,197,24,0.35);
+  }
+  .coin-svg { width: 90px; height: 90px; margin: 0 auto 8px; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+  .coin-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  .coin-label2 { font-size: 0.85rem; color: #888; margin-top: 3px; }
+
+  /* ===== BILLETES ===== */
+  .bills-grid {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .bill-card {
+    border-radius: 18px;
+    padding: 0;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    position: relative;
+    border: 3px solid transparent;
+  }
+  .bill-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.2);
+  }
+  .bill-inner {
+    display: flex; align-items: center;
+    padding: 16px 20px;
+    gap: 20px;
+  }
+  .bill-face {
+    flex-shrink: 0;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .bill-value-big {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+    position: absolute;
+  }
+  .bill-info { flex: 1; }
+  .bill-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  }
+  .bill-desc { font-size: 0.9rem; color: rgba(255,255,255,0.85); margin-top: 4px; }
+  .bill-size-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.3);
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bill-size-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.8);
+    transition: width 1s ease;
+  }
+  .bill-size-label { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin-top: 3px; }
+
+  /* ===== COMPARACIÓN ===== */
+  .compare-container {
+    display: flex; gap: 20px; align-items: center; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .compare-item {
+    background: white;
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    flex: 1; min-width: 150px; max-width: 280px;
+    border: 4px solid #e5e7eb;
+    transition: all .3s;
+    cursor: pointer;
+  }
+  .compare-item:hover { border-color: var(--blue); transform: scale(1.03); }
+  .compare-item.correct { border-color: var(--green); background: #f0fdf4; }
+  .compare-item.wrong { border-color: var(--red); background: #fef2f2; animation: shake .4s; }
+  .compare-vs {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.5rem;
+    color: #999;
+    text-align: center;
+  }
+  .compare-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    text-align: center;
+    color: #1a73e8;
+    margin-bottom: 18px;
+    background: #eff6ff;
+    padding: 12px 20px;
+    border-radius: 14px;
+  }
+  .btn-next {
+    display: block;
+    margin: 22px auto 0;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    padding: 12px 36px;
+    border-radius: 30px;
+    border: none;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(34,197,94,0.4);
+    transition: all .2s;
+  }
+  .btn-next:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(34,197,94,0.5); }
+
+  /* ===== JUEGO SUMA ===== */
+  .game-box {
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .game-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: #1a73e8;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .money-display {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center;
+    margin: 16px 0;
+    min-height: 100px;
+    background: #f8f9fa;
+    border-radius: 16px;
+    padding: 16px;
+    border: 2px dashed #e5e7eb;
+  }
+  .money-chip {
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    padding: 8px 14px;
+    border-radius: 30px;
+    color: white;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    cursor: default;
+    user-select: none;
+    transition: all .15s;
+  }
+  .answer-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .ans-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    padding: 14px;
+    border-radius: 16px;
+    border: 3px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    transition: all .2s;
+    color: #333;
+  }
+  .ans-btn:hover { background: #eff6ff; border-color: var(--blue); transform: scale(1.04); }
+  .ans-btn.correct { background: #f0fdf4; border-color: var(--green); color: var(--green); }
+  .ans-btn.wrong { background: #fef2f2; border-color: var(--red); color: var(--red); animation: shake .4s; }
+
+  /* FEEDBACK */
+  #feedback {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 16px;
+    min-height: 40px;
+    transition: all .3s;
+  }
+
+  /* ESTRELLITAS */
+  .stars-row {
+    display: flex; justify-content: center; gap: 8px;
+    margin: 12px 0 0;
+  }
+  .star {
+    font-size: 2rem;
+    filter: grayscale(1) opacity(0.3);
+    transition: all .3s;
+  }
+  .star.lit { filter: none; transform: scale(1.2); }
+
+  /* ANIMACIONES */
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 60%{transform:translateX(8px)}
+  }
+  @keyframes pop {
+    0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1}
+  }
+  @keyframes confetti-fall {
+    0%{transform:translateY(-100px) rotate(0deg);opacity:1}
+    100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+  }
+  .confetti-piece {
+    position: fixed;
+    width: 12px; height: 12px;
+    top: -20px;
+    border-radius: 3px;
+    animation: confetti-fall linear forwards;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .pop { animation: pop .4s ease forwards; }
+
+  /* TOOLTIP monedas */
+  .coin-tooltip {
+    position: fixed;
+    background: #1a1a2e;
+    color: white;
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    max-width: 220px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: none;
+    pointer-events: none;
+    line-height: 1.6;
+  }
+  .coin-tooltip strong { font-size: 1.1rem; color: var(--gold); display: block; margin-bottom: 4px; }
+
+  /* PROGRESO */
+  .progress-bar-outer {
+    background: #e5e7eb;
+    border-radius: 10px;
+    height: 12px;
+    margin: 10px 0 6px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    transition: width .5s ease;
+  }
+
+  /* RESPONSIVE */
+  @media(max-width:600px){
+    header h1{font-size:1.6rem;}
+    .coins-grid{grid-template-columns:repeat(3,1fr);}
+    .compare-vs{font-size:1.8rem;}
+    .tab-btn{font-size:0.85rem;padding:8px 14px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🪙 ¡Aprendo el Euro! 💶</h1>
+  <p>¡Conoce las monedas y billetes del Euro!</p>
+</header>
+
+<div id="scorebar">
+  ⭐ Puntos: <span id="score-val">0</span>
+  &nbsp;|&nbsp;
+  🏅 Nivel: <span id="level-val">1</span>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn active" onclick="showTab('monedas')">🪙 Monedas</button>
+  <button class="tab-btn" onclick="showTab('billetes')">💶 Billetes</button>
+  <button class="tab-btn" onclick="showTab('comparar')">⚖️ ¿Cuál vale más?</button>
+  <button class="tab-btn" onclick="showTab('sumar')">🧮 ¡Cuenta!</button>
+  <button class="tab-btn" onclick="showTab('quiz')">🎯 Quiz</button>
+</div>
+
+<!-- SECCIÓN MONEDAS -->
+<div id="sec-monedas" class="section active">
+  <div class="section-title">🪙 Las Monedas del Euro</div>
+  <p style="text-align:center;color:#666;margin-bottom:18px;">¡Pulsa cada moneda para escuchar su sonido!</p>
+  <div class="coins-grid" id="coins-grid"></div>
+</div>
+
+<!-- SECCIÓN BILLETES -->
+<div id="sec-billetes" class="section">
+  <div class="section-title">💶 Los Billetes del Euro</div>
+  <p style="text-align:center;color:#666;margin-bottom:18px;">¡Los billetes son más grandes cuanto más valen!</p>
+  <div class="bills-grid" id="bills-grid"></div>
+</div>
+
+<!-- SECCIÓN COMPARAR -->
+<div id="sec-comparar" class="section">
+  <div class="section-title">⚖️ ¿Cuál vale más?</div>
+  <div class="compare-question" id="cmp-question"></div>
+  <div class="compare-container" id="cmp-container"></div>
+  <div id="feedback" style="margin-top:20px;"></div>
+  <button class="btn-next" onclick="nextCompare()">➡️ Siguiente</button>
+</div>
+
+<!-- SECCIÓN SUMAR -->
+<div id="sec-sumar" class="section">
+  <div class="section-title">🧮 ¡Cuenta el Dinero!</div>
+  <div class="game-box">
+    <div class="game-question" id="sum-question">¿Cuánto dinero hay en total?</div>
+    <div class="money-display" id="money-display"></div>
+    <div class="stars-row" id="sum-stars">
+      <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+    </div>
+    <div class="answer-options" id="sum-options"></div>
+    <div id="sum-feedback" style="font-family:'Fredoka One',cursive;font-size:1.4rem;text-align:center;margin-top:14px;min-height:36px;"></div>
+    <button class="btn-next" onclick="nextSum()" style="margin-top:14px;">➡️ Nueva pregunta</button>
+  </div>
+</div>
+
+<!-- SECCIÓN QUIZ -->
+<div id="sec-quiz" class="section">
+  <div class="section-title">🎯 Quiz Rápido</div>
+  <div class="game-box">
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="quiz-progress" style="width:0%"></div></div>
+    <div id="quiz-q" style="font-family:'Fredoka One',cursive;font-size:1.3rem;color:#1a73e8;text-align:center;margin:16px 0;min-height:60px;"></div>
+    <div id="quiz-visual" style="text-align:center;margin:10px 0;font-size:4rem;"></div>
+    <div class="answer-options" id="quiz-options"></div>
+    <div id="quiz-feedback" style="font-family:'Fredoka One',cursive;font-size:1.4rem;text-align:center;margin-top:14px;min-height:36px;"></div>
+    <div style="text-align:center;font-family:'Fredoka One',cursive;color:#888;margin-top:10px;" id="quiz-counter"></div>
+  </div>
+</div>
+
+<div class="coin-tooltip" id="tooltip"></div>
+
+<script>
+// ===== DATOS =====
+const COINS = [
+  { val: 0.01, label: '1 céntimo',  color1:'#c87941', color2:'#8B4513', emoji:'🟤', info:'La moneda más pequeña. ¡Un centimillo!' },
+  { val: 0.02, label: '2 céntimos', color1:'#c87941', color2:'#8B4513', emoji:'🟤', info:'¡Dos centimillos!' },
+  { val: 0.05, label: '5 céntimos', color1:'#c87941', color2:'#8B4513', emoji:'🟤', info:'Cinco céntimos. Es de color cobre.' },
+  { val: 0.10, label: '10 céntimos',color1:'#d4a843', color2:'#b8860b', emoji:'🟡', info:'Diez céntimos. ¡Dorada!' },
+  { val: 0.20, label: '20 céntimos',color1:'#d4a843', color2:'#b8860b', emoji:'🟡', info:'Veinte céntimos.' },
+  { val: 0.50, label: '50 céntimos',color1:'#d4a843', color2:'#b8860b', emoji:'🟡', info:'Cincuenta céntimos. ¡La mitad de un euro!' },
+  { val: 1.00, label: '1 Euro',     color1:'#c0c0c0', color2:'#d4a843', emoji:'⚪', info:'¡Un euro entero! Tiene dos colores.' },
+  { val: 2.00, label: '2 Euros',    color1:'#d4a843', color2:'#c0c0c0', emoji:'⚪', info:'¡Dos euros! Es la moneda más grande.' },
+];
+
+const BILLS = [
+  { val: 5,   label: '5 €',   color:'#99c4a0', color2:'#2d6a35', colorName:'Verde',        desc:'El billete más pequeño. ¡Color verde!', w:120, wPx:110 },
+  { val: 10,  label: '10 €',  color:'#f4a460', color2:'#8B4513', colorName:'Rojo-naranja',  desc:'Billete rojo-naranja. Un poco más grande.', w:126, wPx:125 },
+  { val: 20,  label: '20 €',  color:'#7ec8e3', color2:'#1565c0', colorName:'Azul',          desc:'Billete azul. ¡Puedes comprar muchas cosas!', w:133, wPx:142 },
+  { val: 50,  label: '50 €',  color:'#f5c518', color2:'#8B6914', colorName:'Naranja',       desc:'Billete naranja-dorado. ¡Cincuenta euros!', w:140, wPx:158 },
+  { val: 100, label: '100 €', color:'#98fb98', color2:'#1a5e20', colorName:'Verde claro',   desc:'Billete verde claro. ¡Cien euros!', w:147, wPx:175 },
+  { val: 200, label: '200 €', color:'#ffd700', color2:'#8B6000', colorName:'Amarillo',      desc:'Billete amarillo. ¡Doscientos euros!', w:153, wPx:190 },
+  { val: 500, label: '500 €', color:'#c8a2c8', color2:'#6a0080', colorName:'Morado',        desc:'El billete más grande y morado. ¡Quinientos euros!', w:160, wPx:200 },
+];
+
+// ===== AUDIO (Web Audio API) =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function getCtx() { if(!audioCtx) audioCtx = new AudioCtx(); return audioCtx; }
+
+function playCoin(type) {
+  const ctx = getCtx();
+  const freqs = {
+    small:  [[1200,0.08],[900,0.06]],
+    medium: [[800,0.08],[1000,0.07]],
+    large:  [[600,0.1],[900,0.08],[700,0.06]],
+    bill:   [[400,0.1],[350,0.15],[300,0.1]],
+    correct:[[523,0.1],[659,0.1],[784,0.15],[1047,0.2]],
+    wrong:  [[300,0.12],[200,0.15]],
+    win:    [[523,0.08],[659,0.08],[784,0.08],[1047,0.12],[1319,0.15]]
+  };
+  const seq = freqs[type] || freqs.small;
+  let t = ctx.currentTime;
+  seq.forEach(([freq, dur]) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = (type==='bill'||type==='wrong') ? 'sawtooth' : 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.35, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.05);
+    osc.start(t); osc.stop(t + dur + 0.06);
+    t += dur * 0.8;
+  });
+}
+
+// ===== PUNTUACIÓN =====
+let score = 0;
+let level = 1;
+function addScore(pts) {
+  score += pts;
+  document.getElementById('score-val').textContent = score;
+  if(score >= level * 50) {
+    level++;
+    document.getElementById('level-val').textContent = level;
+    spawnConfetti();
+  }
+}
+
+// ===== CONFETI =====
+function spawnConfetti() {
+  const colors = ['#f5c518','#1a73e8','#22c55e','#ef4444','#a855f7','#f97316'];
+  for(let i=0;i<40;i++){
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.borderRadius = Math.random()>0.5?'50%':'3px';
+    el.style.width = el.style.height = (8+Math.random()*10)+'px';
+    el.style.animationDuration = (1.5+Math.random()*2)+'s';
+    el.style.animationDelay = Math.random()*0.5+'s';
+    document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+  }
+}
+
+// ===== TABS =====
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='comparar') nextCompare();
+  if(name==='sumar') nextSum();
+  if(name==='quiz') startQuiz();
+}
+
+// ===== DIBUJO MONEDAS SVG =====
+function coinSVG(coin) {
+  const isLarge = coin.val >= 1;
+  const isMedium = coin.val >= 0.10 && coin.val < 1;
+  const r = isLarge ? 42 : (isMedium ? 38 : 34);
+  const cx = 48, cy = 48;
+
+  let inner = '';
+  if(isLarge) {
+    // moneda bimetálica
+    const innerCol = coin.val===1 ? '#c0c0c0' : '#d4a843';
+    const outerCol = coin.val===1 ? '#d4a843' : '#c0c0c0';
+    inner = `
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="${outerCol}" stroke="#888" stroke-width="2"/>
+      <circle cx="${cx}" cy="${cy}" r="${r*0.6}" fill="${innerCol}" stroke="#aaa" stroke-width="1.5"/>
+    `;
+  } else {
+    inner = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${coin.color1}" stroke="${coin.color2}" stroke-width="2.5"/>`;
+  }
+
+  const valStr = coin.val < 1
+    ? (coin.val*100).toFixed(0)+'c'
+    : coin.val.toFixed(0)+'€';
+
+  return `<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" class="coin-svg">
+    <defs>
+      <radialGradient id="cg${valStr.replace('.','')}" cx="35%" cy="30%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.5)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,0.1)"/>
+      </radialGradient>
+    </defs>
+    ${inner}
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#cg${valStr.replace('.','')})"/>
+    <text x="${cx}" y="${cy+2}" text-anchor="middle" dominant-baseline="middle"
+      font-family="Fredoka One,cursive" font-size="${isLarge?18:16}" fill="rgba(0,0,0,0.75)"
+      font-weight="bold">${valStr}</text>
+    <text x="${cx}" y="${cy+16}" text-anchor="middle" dominant-baseline="middle"
+      font-family="serif" font-size="11" fill="rgba(0,0,0,0.4)">€</text>
+  </svg>`;
+}
+
+function buildCoins() {
+  const grid = document.getElementById('coins-grid');
+  grid.innerHTML = '';
+  COINS.forEach(coin => {
+    const div = document.createElement('div');
+    div.className = 'coin-card';
+    div.innerHTML = coinSVG(coin)+
+      `<div class="coin-label">${coin.label}</div>
+       <div class="coin-label2">${coin.val < 1 ? (coin.val*100).toFixed(0)+' cts' : coin.val.toFixed(0)+' €'}</div>`;
+
+    // Sonido al click
+    div.addEventListener('click', ()=>{
+      const type = coin.val < 0.10 ? 'small' : coin.val < 1 ? 'medium' : 'large';
+      playCoin(type);
+      div.classList.add('pop');
+      setTimeout(()=>div.classList.remove('pop'),400);
+
+      // Tooltip
+      const tip = document.getElementById('tooltip');
+      const r = div.getBoundingClientRect();
+      tip.innerHTML = `<strong>${coin.label}</strong>${coin.info}`;
+      tip.style.display = 'block';
+      tip.style.left = Math.min(r.left, window.innerWidth-230)+'px';
+      tip.style.top = (r.bottom+8)+'px';
+      setTimeout(()=>tip.style.display='none', 2500);
+    });
+    grid.appendChild(div);
+  });
+}
+
+// ===== DIBUJO BILLETES =====
+function buildBills() {
+  const grid = document.getElementById('bills-grid');
+  grid.innerHTML = '';
+  const maxW = BILLS[BILLS.length-1].wPx;
+  BILLS.forEach((b,i) => {
+    const div = document.createElement('div');
+    div.className = 'bill-card';
+    div.style.background = `linear-gradient(135deg, ${b.color}, ${b.color2})`;
+    const pct = Math.round((b.wPx/maxW)*100);
+    div.innerHTML = `
+      <div class="bill-inner">
+        <div class="bill-face" style="width:${b.wPx}px;height:${Math.round(b.wPx*0.5)}px;background:linear-gradient(120deg,${b.color}cc,${b.color2}cc);">
+          <div class="bill-value-big">${b.label}</div>
+        </div>
+        <div class="bill-info">
+          <div class="bill-name">${b.label}</div>
+          <div class="bill-desc">${b.desc}</div>
+          <div class="bill-size-bar"><div class="bill-size-fill" style="width:0%" data-pct="${pct}"></div></div>
+          <div class="bill-size-label">Tamaño: ${b.w} mm de ancho</div>
+        </div>
+      </div>`;
+    div.addEventListener('click', ()=>{
+      playCoin('bill');
+      div.style.transform = 'scale(1.03)';
+      setTimeout(()=>div.style.transform='',300);
+    });
+    grid.appendChild(div);
+  });
+  // Animar barras al hacer scroll
+  setTimeout(()=>{
+    document.querySelectorAll('.bill-size-fill').forEach(el=>{
+      el.style.width = el.dataset.pct+'%';
+    });
+  }, 300);
+}
+
+// ===== COMPARAR =====
+const ALL_MONEY = [
+  ...COINS.map(c=>({val:c.val, label:c.label, type:'coin', coin:c})),
+  ...BILLS.map(b=>({val:b.val, label:b.label, type:'bill', bill:b}))
+];
+
+let cmpAnswer = null;
+function nextCompare() {
+  const fb = document.getElementById('feedback');
+  fb.textContent = '';
+  // elegir 2 al azar
+  let a, b;
+  do {
+    a = ALL_MONEY[Math.floor(Math.random()*ALL_MONEY.length)];
+    b = ALL_MONEY[Math.floor(Math.random()*ALL_MONEY.length)];
+  } while(a.val === b.val);
+
+  const questions = ['¿Cuál vale MÁS?','¿Cuál vale MENOS?','¿Qué tienes que elegir si quieres MÁS dinero?'];
+  const qType = Math.floor(Math.random()*3);
+  document.getElementById('cmp-question').textContent = questions[qType];
+  cmpAnswer = qType !== 1 ? (a.val > b.val ? 0 : 1) : (a.val < b.val ? 0 : 1);
+
+  const cont = document.getElementById('cmp-container');
+  cont.innerHTML = '';
+  [a,b].forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'compare-item';
+    if(item.type==='coin') {
+      div.innerHTML = coinSVG(item.coin)+`<div style="font-family:'Fredoka One',cursive;font-size:1.3rem;">${item.label}</div>`;
+    } else {
+      div.innerHTML = `
+        <div style="background:linear-gradient(135deg,${item.bill.color},${item.bill.color2});
+          width:120px;height:60px;border-radius:10px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:white;">${item.label}</span>
+        </div>
+        <div style="font-family:'Fredoka One',cursive;font-size:1.3rem;">${item.label}</div>`;
+    }
+    div.addEventListener('click', ()=>{
+      if(div.classList.contains('correct')||div.classList.contains('wrong')) return;
+      if(idx === cmpAnswer) {
+        div.classList.add('correct');
+        fb.textContent = '¡Genial! ✅ ¡Muy bien!';
+        fb.style.color = '#22c55e';
+        playCoin('correct');
+        addScore(10);
+        spawnConfetti();
+      } else {
+        div.classList.add('wrong');
+        fb.textContent = '❌ ¡Inténtalo de nuevo!';
+        fb.style.color = '#ef4444';
+        playCoin('wrong');
+        // highlight correct
+        cont.children[cmpAnswer].classList.add('correct');
+      }
+    });
+    cont.appendChild(div);
+    if(idx===0){
+      const vs = document.createElement('div');
+      vs.className = 'compare-vs';
+      vs.textContent = 'VS';
+      cont.appendChild(vs);
+    }
+  });
+}
+
+// ===== SUMAR =====
+function formatVal(v) {
+  if(v < 1) return (v*100).toFixed(0)+' cts';
+  if(v % 1 === 0) return v.toFixed(0)+' €';
+  return v.toFixed(2)+' €';
+}
+
+const SUM_POOL = [
+  {val:0.01,label:'1c',bg:'#c87941'}, {val:0.02,label:'2c',bg:'#b8651a'},
+  {val:0.05,label:'5c',bg:'#a0522d'}, {val:0.10,label:'10c',bg:'#d4a843'},
+  {val:0.20,label:'20c',bg:'#c9982a'}, {val:0.50,label:'50c',bg:'#b8880b'},
+  {val:1,label:'1€',bg:'#888'}, {val:2,label:'2€',bg:'#aaa'},
+  {val:5,label:'5€',bg:'#2d6a35'}, {val:10,label:'10€',bg:'#8B4513'},
+  {val:20,label:'20€',bg:'#1565c0'},
+];
+
+let sumStreak = 0;
+
+function nextSum() {
+  document.getElementById('sum-feedback').textContent = '';
+  document.querySelectorAll('.star').forEach(s=>s.classList.remove('lit'));
+
+  // Nivel dinámico: más fácil al principio
+  const maxItems = Math.min(2 + Math.floor(score/30), 5);
+  const maxPoolIdx = Math.min(3 + Math.floor(score/20), SUM_POOL.length-1);
+  const pool = SUM_POOL.slice(0, maxPoolIdx+1);
+
+  const items = [];
+  let total = 0;
+  const count = 2 + Math.floor(Math.random()*(maxItems-1));
+  for(let i=0;i<count;i++){
+    const item = pool[Math.floor(Math.random()*pool.length)];
+    items.push(item);
+    total = parseFloat((total + item.val).toFixed(2));
+  }
+
+  const disp = document.getElementById('money-display');
+  disp.innerHTML = '';
+  items.forEach(item=>{
+    const chip = document.createElement('div');
+    chip.className = 'money-chip pop';
+    chip.style.background = item.bg;
+    chip.textContent = item.label;
+    disp.appendChild(chip);
+  });
+
+  // opciones
+  const opts = [total];
+  while(opts.length<4){
+    let fake = parseFloat((total + (Math.random()>0.5?1:-1)*(Math.random()*total*0.8+0.01)).toFixed(2));
+    if(fake <= 0) fake = parseFloat((total + 0.1).toFixed(2));
+    if(!opts.includes(fake)) opts.push(fake);
+  }
+  opts.sort(()=>Math.random()-0.5);
+
+  const optDiv = document.getElementById('sum-options');
+  optDiv.innerHTML = '';
+  opts.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = formatVal(opt);
+    btn.addEventListener('click',()=>{
+      if(btn.classList.contains('correct')||btn.classList.contains('wrong')) return;
+      if(Math.abs(opt-total)<0.001){
+        btn.classList.add('correct');
+        document.getElementById('sum-feedback').innerHTML = '🎉 ¡Correcto! ¡Eres un crack!';
+        document.getElementById('sum-feedback').style.color='#22c55e';
+        playCoin('correct');
+        addScore(15);
+        sumStreak++;
+        // estrellas
+        const stars = document.querySelectorAll('.star');
+        const lit = Math.min(sumStreak,3);
+        for(let i=0;i<lit;i++) stars[i].classList.add('lit');
+        if(sumStreak>=3) spawnConfetti();
+      } else {
+        btn.classList.add('wrong');
+        document.getElementById('sum-feedback').innerHTML = '❌ ¡No es eso! Mira bien las monedas.';
+        document.getElementById('sum-feedback').style.color='#ef4444';
+        playCoin('wrong');
+        sumStreak = 0;
+        // highlight correct
+        document.querySelectorAll('.ans-btn').forEach(b=>{
+          if(Math.abs(parseFloat(b.textContent.replace('€','').replace('cts','').replace(',','.'))-total)<0.001)
+            b.classList.add('correct');
+        });
+      }
+    });
+    optDiv.appendChild(btn);
+  });
+}
+
+// ===== QUIZ =====
+let quizQuestions = [];
+let quizIdx = 0;
+const TOTAL_QUIZ = 8;
+
+function buildQuizQuestions() {
+  const qs = [];
+  // tipo 1: ¿cuánto vale esta moneda?
+  COINS.forEach(c=>{
+    qs.push({
+      q: `¿Cuánto vale esta moneda?`,
+      visual: coinSVG(c).replace('class="coin-svg"','style="width:100px;height:100px;display:inline-block;"'),
+      answer: c.label,
+      options: shuffle([c.label, ...COINS.filter(x=>x!==c).slice(0,3).map(x=>x.label)])
+    });
+  });
+  // tipo 2: ¿de qué color es el billete de X€?
+  const allColors = ['Verde','Rojo-naranja','Azul','Naranja','Verde claro','Amarillo','Morado'];
+  BILLS.forEach(b=>{
+    const wrongs = shuffle(allColors.filter(c=>c!==b.colorName)).slice(0,3);
+    qs.push({
+      q: `¿De qué color es el billete de ${b.label}?`,
+      visual: '💶',
+      answer: b.colorName,
+      options: shuffle([b.colorName, ...wrongs])
+    });
+  });
+  // tipo 3: ¿cuántos céntimos tiene 1 euro?
+  qs.push({q:'¿Cuántos céntimos tiene 1 euro?',visual:'🪙',answer:'100 céntimos',options:shuffle(['100 céntimos','10 céntimos','50 céntimos','1000 céntimos'])});
+  qs.push({q:'¿Cuántos euros son 200 céntimos?',visual:'🤔',answer:'2 euros',options:shuffle(['2 euros','20 euros','1 euro','200 euros'])});
+  qs.push({q:'¿Qué vale más: 50 céntimos o 1 euro?',visual:'⚖️',answer:'1 euro',options:shuffle(['1 euro','50 céntimos','Son iguales','No lo sé'])});
+  qs.push({q:'¿Cuál es el billete más pequeño del euro?',visual:'💶',answer:'5 euros',options:shuffle(['5 euros','1 euro','10 euros','2 euros'])});
+  qs.push({q:'¿Cuántos céntimos hay en 50 céntimos?',visual:'🪙',answer:'50',options:shuffle(['50','5','500','15'])});
+  return shuffle(qs).slice(0, TOTAL_QUIZ);
+}
+
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-0.5); }
+
+function startQuiz() {
+  quizQuestions = buildQuizQuestions();
+  quizIdx = 0;
+  showQuizQ();
+}
+
+function showQuizQ() {
+  if(quizIdx >= quizQuestions.length) {
+    document.getElementById('quiz-q').textContent = '🏆 ¡Has terminado el quiz!';
+    document.getElementById('quiz-visual').innerHTML = '🎉🎊🏆';
+    document.getElementById('quiz-options').innerHTML = '';
+    document.getElementById('quiz-feedback').textContent = `¡Conseguiste ${score} puntos!`;
+    document.getElementById('quiz-counter').textContent = '';
+    spawnConfetti(); playCoin('win');
+    return;
+  }
+  const q = quizQuestions[quizIdx];
+  document.getElementById('quiz-progress').style.width = (quizIdx/TOTAL_QUIZ*100)+'%';
+  document.getElementById('quiz-q').textContent = q.q;
+  document.getElementById('quiz-visual').innerHTML = q.visual;
+  document.getElementById('quiz-feedback').textContent = '';
+  document.getElementById('quiz-counter').textContent = `Pregunta ${quizIdx+1} de ${TOTAL_QUIZ}`;
+
+  const optsDiv = document.getElementById('quiz-options');
+  optsDiv.innerHTML = '';
+  const opts = q.options;
+  opts.forEach(opt=>{
+    const btn = document.createElement('button');
+    btn.className = 'ans-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click',()=>{
+      if(optsDiv.dataset.answered) return;
+      optsDiv.dataset.answered = '1';
+      if(opt === q.answer) {
+        btn.classList.add('correct');
+        document.getElementById('quiz-feedback').innerHTML = '✅ ¡Correcto!';
+        document.getElementById('quiz-feedback').style.color='#22c55e';
+        playCoin('correct'); addScore(20);
+      } else {
+        btn.classList.add('wrong');
+        document.getElementById('quiz-feedback').innerHTML = `❌ Era: ${q.answer}`;
+        document.getElementById('quiz-feedback').style.color='#ef4444';
+        playCoin('wrong');
+        optsDiv.querySelectorAll('.ans-btn').forEach(b=>{ if(b.textContent===q.answer) b.classList.add('correct'); });
+      }
+      setTimeout(()=>{ optsDiv.dataset.answered=''; quizIdx++; showQuizQ(); }, 1600);
+    });
+    optsDiv.appendChild(btn);
+  });
+}
+
+// ===== INIT =====
+buildCoins();
+buildBills();
+nextCompare();
+nextSum();
+
+// cerrar tooltip al click fuera
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.coin-card')) document.getElementById('tooltip').style.display='none';
+});
+</script>
+</body>
+</html>
