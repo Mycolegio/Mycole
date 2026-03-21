@@ -49,8 +49,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
     padding: clamp(8px, 2vh, 24px) clamp(10px, 2vw, 30px);
+    padding-bottom: max(clamp(14px, 3vh, 30px), env(safe-area-inset-bottom, 20px));
   }
 
   /* HEADER */
