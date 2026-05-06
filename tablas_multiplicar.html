@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Maestro de las Tablas - Aprende Multiplicación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .menu-section {
+            display: none;
+        }
+
+        .menu-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-table {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-table:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 30px;
+            width: 100%;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .question-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .question {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .answer-input {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.5em;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            transition: border-color 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .answer-input.correct {
+            border-color: #4caf50;
+            background-color: #f1f8f4;
+        }
+
+        .answer-input.incorrect {
+            border-color: #f44336;
+            background-color: #fdeaea;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 30px;
+        }
+
+        .feedback.correct {
+            color: #4caf50;
+        }
+
+        .feedback.incorrect {
+            color: #f44336;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .results-container {
+            text-align: center;
+        }
+
+        .results-title {
+            font-size: 2em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .results-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #f5576c;
+            margin-bottom: 10px;
+        }
+
+        .results-message {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .table-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .table-btn {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .table-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .table-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .difficulty-selection {
+            margin-bottom: 20px;
+        }
+
+        .difficulty-btn {
+            padding: 12px 20px;
+            margin: 5px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .difficulty-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .difficulty-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+        }
+
+        .medal {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .tips {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .tips-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 5px;
+        }
+
+        .tips-text {
+            color: #856404;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .title {
+                font-size: 2em;
+            }
+
+            .question {
+                font-size: 2em;
+            }
+
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-selection {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- MENÚ PRINCIPAL -->
+        <div id="menu" class="menu-section active">
+            <div class="header">
+                <div class="title">🎮 Maestro de las Tablas</div>
+                <div class="subtitle">¡Aprende las multiplicaciones jugando!</div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Preguntas</div>
+                    <div class="stat-value" id="totalQuestions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Correctas</div>
+                    <div class="stat-value" id="totalCorrect">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Racha 🔥</div>
+                    <div class="stat-value" id="streak">0</div>
+                </div>
+            </div>
+
+            <div class="tips">
+                <div class="tips-title">💡 Consejo</div>
+                <div class="tips-text">Elige una tabla y practica. Cuantas más veces practiques, ¡más rápido aprenderás! 🚀</div>
+            </div>
+
+            <h3 style="margin-bottom: 15px; color: #667eea;">Elige una tabla para practicar:</h3>
+            <div class="buttons-grid">
+                <button class="btn btn-table" onclick="selectTable(1)">📌 Tabla del 1</button>
+                <button class="btn btn-table" onclick="selectTable(2)">✌️ Tabla del 2</button>
+                <button class="btn btn-table" onclick="selectTable(3)">👌 Tabla del 3</button>
+                <button class="btn btn-table" onclick="selectTable(4)">✋ Tabla del 4</button>
+                <button class="btn btn-table" onclick="selectTable(5)">🖐️ Tabla del 5</button>
+                <button class="btn btn-table" onclick="selectTable(6)">🎲 Tabla del 6</button>
+                <button class="btn btn-table" onclick="selectTable(7)">🍀 Tabla del 7</button>
+                <button class="btn btn-table" onclick="selectTable(8)">🎱 Tabla del 8</button>
+                <button class="btn btn-table" onclick="selectTable(9)">⭕ Tabla del 9</button>
+                <button class="btn btn-table" onclick="selectTable(10)">🔟 Tabla del 10</button>
+            </div>
+
+            <button class="btn btn-primary" onclick="showExamMode()">📝 Examen de Velocidad</button>
+        </div>
+
+        <!-- SELECCIÓN DE DIFICULTAD -->
+        <div id="difficulty" class="menu-section">
+            <div class="header">
+                <div class="title">🎯 Elige Dificultad</div>
+            </div>
+
+            <h3 style="margin-bottom: 20px; color: #667eea;">¿Cuántas preguntas quieres?</h3>
+
+            <div class="difficulty-selection" style="text-align: center;">
+                <button class="difficulty-btn" onclick="startGame(5)">⚡ 5 Preguntas<br><small style="font-size: 0.8em;">Rápido</small></button>
+                <button class="difficulty-btn" onclick="startGame(10)">🔥 10 Preguntas<br><small style="font-size: 0.8em;">Normal</small></button>
+                <button class="difficulty-btn" onclick="startGame(15)">💪 15 Preguntas<br><small style="font-size: 0.8em;">Desafío</small></button>
+                <button class="difficulty-btn" onclick="startGame(20)">👑 20 Preguntas<br><small style="font-size: 0.8em;">Campeón</small></button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="goToMenu()">← Volver</button>
+        </div>
+
+        <!-- JUEGO -->
+        <div id="game" class="menu-section">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="question-number" id="questionNumber">Pregunta 1 de 10</div>
+
+            <div class="question-container">
+                <div class="question" id="questionText">5 × 3 = ?</div>
+            </div>
+
+            <div class="input-group">
+                <input type="number" class="answer-input" id="answerInput" placeholder="Tu respuesta" autofocus>
+                <button class="btn btn-primary" style="width: 60px; padding: 15px;" onclick="submitAnswer()">✓</button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <button class="btn btn-secondary" onclick="goToMenu()" style="margin-bottom: 0;">← Salir</button>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="results" class="menu-section">
+            <div class="results-container">
+                <div class="medal" id="medal">🎉</div>
+                <div class="results-title">¡Excelente!</div>
+                <div class="results-score" id="resultScore">85%</div>
+                <div class="results-message" id="resultMessage">Has acertado 17 de 20 preguntas</div>
+
+                <div style="margin-top: 30px;">
+                    <p style="color: #666; font-size: 1.1em; margin-bottom: 20px;">
+                        <span id="resultDetails"></span>
+                    </p>
+                </div>
+
+                <button class="btn btn-primary" onclick="goToMenu()">🏠 Volver al Menú</button>
+                <button class="btn btn-secondary" onclick="retryLastTable()">🔄 Reintentar</button>
+            </div>
+        </div>
+
+        <!-- EXAMEN ALEATORIO -->
+        <div id="examMode" class="menu-section">
+            <div class="header">
+                <div class="title">📝 Examen de Velocidad</div>
+                <div class="subtitle">Mezcla de todas las tablas</div>
+            </div>
+
+            <h3 style="margin-bottom: 20px; color: #667eea;">¿Cuántas preguntas?</h3>
+
+            <div class="difficulty-selection" style="text-align: center;">
+                <button class="difficulty-btn" onclick="startExam(10)">⚡ 10 Preguntas</button>
+                <button class="difficulty-btn" onclick="startExam(15)">🔥 15 Preguntas</button>
+                <button class="difficulty-btn" onclick="startExam(20)">💪 20 Preguntas</button>
+                <button class="difficulty-btn" onclick="startExam(30)">👑 30 Preguntas</button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="goToMenu()" style="margin-top: 20px;">← Volver</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            currentTable: null,
+            currentQuestion: 0,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            questions: [],
+            isAnswered: false,
+            streak: 0,
+            totalQuestionsAsked: 0,
+            totalCorrect: 0,
+            startTime: 0,
+            isExamMode: false
+        };
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.menu-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function selectTable(num) {
+            gameState.currentTable = num;
+            showSection('difficulty');
+        }
+
+        function goToMenu() {
+            showSection('menu');
+            gameState.correctAnswers = 0;
+            gameState.currentQuestion = 0;
+        }
+
+        function showExamMode() {
+            showSection('examMode');
+        }
+
+        function generateQuestions(tableNum, count) {
+            const questions = [];
+            for (let i = 0; i < count; i++) {
+                const multiplier = Math.floor(Math.random() * 10) + 1;
+                questions.push({
+                    num1: tableNum,
+                    num2: multiplier,
+                    answer: tableNum * multiplier
+                });
+            }
+            return questions;
+        }
+
+        function generateExamQuestions(count) {
+            const questions = [];
+            for (let i = 0; i < count; i++) {
+                const num1 = Math.floor(Math.random() * 12) + 1;
+                const num2 = Math.floor(Math.random() * 10) + 1;
+                questions.push({
+                    num1: num1,
+                    num2: num2,
+                    answer: num1 * num2
+                });
+            }
+            return questions;
+        }
+
+        function startGame(count) {
+            gameState.totalQuestions = count;
+            gameState.currentQuestion = 0;
+            gameState.correctAnswers = 0;
+            gameState.questions = generateQuestions(gameState.currentTable, count);
+            gameState.isExamMode = false;
+            gameState.startTime = Date.now();
+            
+            showSection('game');
+            loadQuestion();
+        }
+
+        function startExam(count) {
+            gameState.totalQuestions = count;
+            gameState.currentQuestion = 0;
+            gameState.correctAnswers = 0;
+            gameState.questions = generateExamQuestions(count);
+            gameState.isExamMode = true;
+            gameState.startTime = Date.now();
+            
+            showSection('game');
+            loadQuestion();
+        }
+
+        function retryLastTable() {
+            if (gameState.currentTable) {
+                selectTable(gameState.currentTable);
+            } else {
+                goToMenu();
+            }
+        }
+
+        function loadQuestion() {
+            const question = gameState.questions[gameState.currentQuestion];
+            document.getElementById('questionText').textContent = `${question.num1} × ${question.num2} = ?`;
+            document.getElementById('questionNumber').textContent = `Pregunta ${gameState.currentQuestion + 1} de ${gameState.totalQuestions}`;
+            
+            const progress = ((gameState.currentQuestion) / gameState.totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').className = 'answer-input';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+            
+            gameState.isAnswered = false;
+            document.getElementById('answerInput').focus();
+        }
+
+        function submitAnswer() {
+            if (gameState.isAnswered) {
+                nextQuestion();
+                return;
+            }
+
+            const input = document.getElementById('answerInput');
+            const userAnswer = parseInt(input.value);
+            const correctAnswer = gameState.questions[gameState.currentQuestion].answer;
+
+            if (isNaN(userAnswer)) {
+                input.focus();
+                return;
+            }
+
+            gameState.isAnswered = true;
+            input.disabled = true;
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct');
+                document.getElementById('feedback').classList.add('correct');
+                document.getElementById('feedback').textContent = '¡Correcto! 🎉';
+                gameState.correctAnswers++;
+                gameState.streak++;
+                gameState.totalCorrect++;
+                playSuccessSound();
+                createConfetti();
+            } else {
+                input.classList.add('incorrect');
+                document.getElementById('feedback').classList.add('incorrect');
+                document.getElementById('feedback').textContent = `❌ Incorrecto. La respuesta es ${correctAnswer}`;
+                gameState.streak = 0;
+                playErrorSound();
+            }
+
+            document.getElementById('totalCorrect').textContent = gameState.totalCorrect;
+            document.getElementById('streak').textContent = gameState.streak;
+
+            setTimeout(() => {
+                nextQuestion();
+            }, 1200);
+        }
+
+        function nextQuestion() {
+            gameState.currentQuestion++;
+
+            if (gameState.currentQuestion >= gameState.totalQuestions) {
+                endGame();
+            } else {
+                loadQuestion();
+            }
+        }
+
+        function endGame() {
+            const percentage = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
+            const timeTaken = Math.round((Date.now() - gameState.startTime) / 1000);
+
+            let medal = '🎉';
+            let title = '¡Muy Bien!';
+            let message = `Acertaste ${gameState.correctAnswers} de ${gameState.totalQuestions}`;
+
+            if (percentage === 100) {
+                medal = '🏆';
+                title = '¡PERFECTO!';
+                message = `¡Eres un CAMPEÓN! ¡100% correcto!`;
+            } else if (percentage >= 90) {
+                medal = '🥇';
+                title = '¡Excelente!';
+            } else if (percentage >= 80) {
+                medal = '🥈';
+                title = '¡Muy Bien!';
+            } else if (percentage >= 70) {
+                medal = '🥉';
+                title = '¡Bien!';
+                message = `Acertaste ${gameState.correctAnswers} de ${gameState.totalQuestions}. ¡Sigue practicando!`;
+            } else {
+                medal = '💪';
+                title = '¡Buen Intento!';
+                message = `Acertaste ${gameState.correctAnswers} de ${gameState.totalQuestions}. ¡Practica más!`;
+            }
+
+            document.getElementById('medal').textContent = medal;
+            document.getElementById('resultScore').textContent = percentage + '%';
+            document.getElementById('results').querySelector('.results-title').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+
+            const tableInfo = gameState.isExamMode ? 'Examen Aleatorio' : `Tabla del ${gameState.currentTable}`;
+            document.getElementById('resultDetails').textContent = `${tableInfo} • ${timeTaken} segundos`;
+
+            gameState.totalQuestionsAsked += gameState.totalQuestions;
+            document.getElementById('totalQuestions').textContent = gameState.totalQuestionsAsked;
+
+            showSection('results');
+            createBigConfetti();
+        }
+
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c'];
+            for (let i = 0; i < 20; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.textContent = ['🎉', '⭐', '✨', '🎈'][Math.floor(Math.random() * 4)];
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '0px';
+                confetti.style.fontSize = Math.random() * 20 + 20 + 'px';
+                document.body.appendChild(confetti);
+
+                let top = 0;
+                let opacity = 1;
+                const interval = setInterval(() => {
+                    top += Math.random() * 8 + 4;
+                    opacity -= 0.02;
+                    confetti.style.top = top + 'px';
+                    confetti.style.opacity = opacity;
+
+                    if (opacity <= 0) {
+                        clearInterval(interval);
+                        confetti.remove();
+                    }
+                }, 50);
+            }
+        }
+
+        function createBigConfetti() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => createConfetti(), i * 100);
+            }
+        }
+
+        function playSuccessSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [440, 550, 660];
+                notes.forEach((frequency, index) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = frequency;
+                    gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    osc.start(audioContext.currentTime + index * 0.1);
+                    osc.stop(audioContext.currentTime + index * 0.1 + 0.15);
+                });
+            } catch (e) {
+                console.log('Audio no disponible');
+            }
+        }
+
+        function playErrorSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = 150;
+                gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('Audio no disponible');
+            }
+        }
+
+        // Permitir Enter para enviar respuesta
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const answerInput = document.getElementById('answerInput');
+                if (answerInput && document.body.contains(answerInput)) {
+                    submitAnswer();
+                }
+            }
+        });
+
+        // Inicializar
+        document.getElementById('totalQuestions').textContent = '0';
+        document.getElementById('totalCorrect').textContent = '0';
+        document.getElementById('streak').textContent = '0';
+    </script>
+</body>
+</html>
