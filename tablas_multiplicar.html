@@ -183,17 +183,50 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .answer-input {
+                width: 100%;
+                min-height: 60px;
+                font-size: 2em;
+            }
+
+            .btn {
+                min-height: 60px;
+                font-size: 1.2em;
+            }
         }
 
         .answer-input {
             flex: 1;
-            padding: 15px;
-            font-size: 1.5em;
+            padding: 18px;
+            font-size: 1.8em;
             border: 3px solid #ddd;
             border-radius: 10px;
             text-align: center;
             font-weight: bold;
             transition: border-color 0.3s;
+            min-height: 55px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: white;
+        }
+
+        .answer-input::-webkit-outer-spin-button,
+        .answer-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .answer-input[type=number] {
+            -moz-appearance: textfield;
         }
 
         .answer-input:focus {
@@ -464,7 +497,7 @@
             </div>
 
             <div class="input-group">
-                <input type="number" class="answer-input" id="answerInput" placeholder="Tu respuesta" autofocus>
+                <input type="text" inputmode="numeric" class="answer-input" id="answerInput" placeholder="Tu respuesta" autofocus maxlength="3">
                 <button class="btn btn-primary" style="width: 60px; padding: 15px;" onclick="submitAnswer()">✓</button>
             </div>
 
@@ -614,13 +647,19 @@
             const progress = ((gameState.currentQuestion) / gameState.totalQuestions) * 100;
             document.getElementById('progressFill').style.width = progress + '%';
             
-            document.getElementById('answerInput').value = '';
-            document.getElementById('answerInput').className = 'answer-input';
+            const input = document.getElementById('answerInput');
+            input.value = '';
+            input.className = 'answer-input';
+            input.disabled = false;
             document.getElementById('feedback').textContent = '';
             document.getElementById('feedback').className = 'feedback';
             
             gameState.isAnswered = false;
-            document.getElementById('answerInput').focus();
+            
+            // Forzar el enfoque y mostrar teclado en tablets
+            setTimeout(() => {
+                input.focus();
+            }, 100);
         }
 
         function submitAnswer() {
@@ -630,16 +669,17 @@
             }
 
             const input = document.getElementById('answerInput');
-            const userAnswer = parseInt(input.value);
+            const userAnswer = parseInt(input.value.trim());
             const correctAnswer = gameState.questions[gameState.currentQuestion].answer;
 
-            if (isNaN(userAnswer)) {
+            if (isNaN(userAnswer) || input.value.trim() === '') {
                 input.focus();
                 return;
             }
 
             gameState.isAnswered = true;
             input.disabled = true;
+            input.blur(); // Ocultar teclado virtual
 
             if (userAnswer === correctAnswer) {
                 input.classList.add('correct');
@@ -793,8 +833,19 @@
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 const answerInput = document.getElementById('answerInput');
-                if (answerInput && document.body.contains(answerInput)) {
+                if (answerInput && document.body.contains(answerInput) && !answerInput.disabled) {
                     submitAnswer();
+                }
+            }
+        });
+
+        // Soporte para tablets con evento input
+        document.addEventListener('input', function(event) {
+            if (event.target && event.target.id === 'answerInput') {
+                // Auto-enviar si se alcanza 3 dígitos (para respuestas de 3 dígitos)
+                const value = event.target.value;
+                if (value.length >= 3 && value.length <= 4) {
+                    // Opcional: auto-enviar después de escribir
                 }
             }
         });
